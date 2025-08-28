@@ -96,6 +96,35 @@ interface BetterChatOutput {
 }
 ```
 
+## Package Structure
+
+The node follows n8n community node patterns discovered from working examples:
+
+```
+n8n-nodes-better-chat/
+├── nodes/
+│   └── BetterChatUI/
+│       ├── BetterChatUi.node.ts    # Main node implementation
+│       └── chat.svg                # Node icon
+├── dist/                           # Compiled output (auto-generated)
+│   └── nodes/BetterChatUI/
+│       ├── BetterChatUi.node.js    # Compiled node (referenced in package.json)
+│       ├── BetterChatUi.node.d.ts  # Type definitions
+│       └── chat.svg                # Copied icon
+├── package.json                    # Package configuration (main: "index.js" but NO actual file)
+├── tsconfig.json                   # TypeScript configuration
+├── gulpfile.js                     # Build automation
+└── README.md                       # Documentation
+```
+
+### Critical Discovery: No Root Index Files
+Analysis of working n8n community nodes revealed that they specify `"main": "index.js"` in package.json but **do not include actual root index files**. n8n ignores the main field and only uses the paths specified in the `n8n.nodes` array.
+
+Previous versions (0.1.0-0.1.2) incorrectly included root `index.js` and `index.ts` files that caused loading conflicts.
+
+### Node Group Classification
+Changed from `'transform'` to `'trigger'` group as the Better Chat UI is an interactive interface node rather than a data transformation node. This better reflects its purpose as a user interface trigger.
+
 ## Integration Patterns
 
 ### Pattern 1: Simple Chat

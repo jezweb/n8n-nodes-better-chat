@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2025-01-28
+
+### Fixed
+- **CRITICAL**: Removed root index.js and index.ts files that conflicted with n8n loading mechanism
+- Node group changed from 'transform' to 'trigger' for better categorization
+- Package structure now matches working n8n community node patterns
+
+### Changed
+- Updated TypeScript configuration to exclude root index compilation
+- Architectural documentation updated with critical loading mechanism discovery
+- No longer exports via root index files (n8n uses only n8n.nodes array paths)
+
+## [0.1.2] - 2025-01-28
+
+### Fixed
+- Corrected package.json main entry point from "dist/index.js" to "index.js"
+- Added proper root index.js exports structure
+- Fixed npm package loading and verification
+
+## [0.1.1] - 2025-01-28
+
+### Fixed
+- Added missing index.ts export file for proper node registration
+- Updated package.json main entry to point to dist/index.js
+- Resolved TypeScript compilation issues with node exports
+
+## [0.1.0] - 2025-01-28
+
 ### Added
 - Initial project structure from n8n-nodes-starter
 - Core Better Chat UI node implementation
