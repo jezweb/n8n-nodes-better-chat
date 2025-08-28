@@ -1,10 +1,9 @@
 import {
-	IExecuteFunctions,
-	INodeExecutionData,
+	IWebhookFunctions,
+	IWebhookResponseData,
 	INodeType,
 	INodeTypeDescription,
 	IDataObject,
-	NodeOperationError,
 	NodeConnectionType,
 	ApplicationError,
 } from 'n8n-workflow';
@@ -21,9 +20,27 @@ export class BetterChatUI implements INodeType {
 		defaults: {
 			name: 'Better Chat UI',
 		},
-		inputs: [NodeConnectionType.Main],
+		inputs: [],
 		outputs: [NodeConnectionType.Main],
+		webhooks: [
+			{
+				name: 'default',
+				httpMethod: 'POST',
+				responseMode: 'onReceived',
+				path: '={{$parameter["webhookPath"]}}',
+			},
+		],
 		properties: [
+			// Webhook Configuration
+			{
+				displayName: 'Webhook Path',
+				name: 'webhookPath',
+				type: 'string',
+				default: 'chat',
+				placeholder: 'chat',
+				required: true,
+				description: 'The path to listen for chat messages. This will be appended to the webhook URL.',
+			},
 			// Display Mode
 			{
 				displayName: 'Display Mode',
@@ -112,18 +129,6 @@ export class BetterChatUI implements INodeType {
 						displayMode: ['rich', 'advanced'],
 					},
 				},
-			},
-			// Message Input
-			{
-				displayName: 'Message',
-				name: 'message',
-				type: 'string',
-				typeOptions: {
-					rows: 4,
-				},
-				default: '',
-				placeholder: 'Enter your message here...',
-				description: 'The message to send in the chat',
 			},
 			// System Prompt Override
 			{
@@ -351,136 +356,116 @@ export class BetterChatUI implements INodeType {
 		usableAsTool: true,
 	};
 
-	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-		const items = this.getInputData();
-		const returnData: INodeExecutionData[] = [];
+	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 		const nodeInstance = new BetterChatUI();
-
-		for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
-			try {
-				// Get parameters
-				const displayMode = this.getNodeParameter('displayMode', itemIndex) as string;
-				const features = this.getNodeParameter('features', itemIndex, []) as string[];
-				const message = this.getNodeParameter('message', itemIndex, '') as string;
-				const systemPrompt = this.getNodeParameter('systemPrompt', itemIndex, '') as string;
-				const threadOptions = this.getNodeParameter('threadOptions', itemIndex, {}) as IDataObject;
-				const uiSettings = this.getNodeParameter('uiSettings', itemIndex, {}) as IDataObject;
-				const fileSettings = this.getNodeParameter('fileSettings', itemIndex, {}) as IDataObject;
-				const exportSettings = this.getNodeParameter('exportSettings', itemIndex, {}) as IDataObject;
-
-				// Get input data
-				const inputData = items[itemIndex].json;
-
-				// Initialize messages array
-				let messages: any[] = [];
-
-				// Check if we have previous messages from input
-				if (inputData.messages && Array.isArray(inputData.messages)) {
-					messages = inputData.messages;
-				}
-
-				// Generate thread ID if not provided
-				const threadId = threadOptions.threadId || `thread_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-				// Add current message if provided
-				if (message) {
-					messages.push({
-						role: 'user',
-						content: message,
-						timestamp: new Date().toISOString(),
-						metadata: {
-							thread_id: threadId,
-							folder: threadOptions.folder || 'default',
-						},
-					});
-				}
-
-				// Handle system prompt if provided
-				if (systemPrompt && messages.length > 0) {
-					// Insert system prompt at the beginning if not already present
-					const hasSystemMessage = messages.some(m => m.role === 'system');
-					if (!hasSystemMessage) {
-						messages.unshift({
-							role: 'system',
-							content: systemPrompt,
-							timestamp: new Date().toISOString(),
-						});
-					}
-				}
-
-				// Apply max messages limit if set
-				const maxMessages = threadOptions.maxMessages as number;
-				if (maxMessages && messages.length > maxMessages) {
-					// Keep system message if present, then slice from the end
-					const systemMessages = messages.filter(m => m.role === 'system');
-					const nonSystemMessages = messages.filter(m => m.role !== 'system');
-					const limitedMessages = nonSystemMessages.slice(-(maxMessages - systemMessages.length));
-					messages = [...systemMessages, ...limitedMessages];
-				}
-
-				// Process features
-				const processedMessages = nodeInstance.processMessages(messages, features);
-
-				// Prepare output
-				const output: IDataObject = {
-					messages: processedMessages,
-					action: inputData.action || 'send',
-					displayMode,
-					features,
-					uiState: {
-						...uiSettings,
-						lastInteraction: new Date().toISOString(),
-					},
-					context: {
-						thread_id: threadId,
-						session_id: this.getExecutionId(),
-						folder: threadOptions.folder || 'default',
-					},
-				};
-
-				// Add file settings if files feature is enabled
-				if (features.includes('files')) {
-					output.fileSettings = fileSettings;
-				}
-
-				// Add export settings if export feature is enabled
-				if (features.includes('export')) {
-					output.exportSettings = exportSettings;
-				}
-
-				// Handle any files from input
-				if (inputData.files && Array.isArray(inputData.files)) {
-					try {
-						output.files = nodeInstance.processFiles(inputData.files, fileSettings);
-					} catch (error) {
-						if (this.continueOnFail()) {
-							output.fileError = error.message;
-						} else {
-							throw new NodeOperationError(this.getNode(), error.message);
-						}
-					}
-				}
-
-				returnData.push({
-					json: output,
-					pairedItem: itemIndex,
+		
+		// Get webhook data
+		const body = this.getBodyData() as IDataObject;
+		const headers = this.getHeaderData() as IDataObject;
+		const query = this.getQueryData() as IDataObject;
+		
+		// Get node parameters
+		const displayMode = this.getNodeParameter('displayMode') as string;
+		const features = this.getNodeParameter('features', []) as string[];
+		const systemPrompt = this.getNodeParameter('systemPrompt', '') as string;
+		const threadOptions = this.getNodeParameter('threadOptions', {}) as IDataObject;
+		const uiSettings = this.getNodeParameter('uiSettings', {}) as IDataObject;
+		const fileSettings = this.getNodeParameter('fileSettings', {}) as IDataObject;
+		const exportSettings = this.getNodeParameter('exportSettings', {}) as IDataObject;
+		
+		// Extract message from webhook body
+		const message = body.message as string || body.text as string || body.content as string || '';
+		const previousMessages = body.messages as any[] || [];
+		const files = body.files as any[] || [];
+		
+		// Initialize messages array
+		let messages: any[] = [...previousMessages];
+		
+		// Generate thread ID if not provided
+		const threadId = body.thread_id as string || threadOptions.threadId || 
+			`thread_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+		
+		// Add current message if provided
+		if (message) {
+			messages.push({
+				role: 'user',
+				content: message,
+				timestamp: new Date().toISOString(),
+				metadata: {
+					thread_id: threadId,
+					folder: threadOptions.folder || 'default',
+					source: 'webhook',
+				},
+			});
+		}
+		
+		// Handle system prompt if provided
+		if (systemPrompt && messages.length > 0) {
+			const hasSystemMessage = messages.some(m => m.role === 'system');
+			if (!hasSystemMessage) {
+				messages.unshift({
+					role: 'system',
+					content: systemPrompt,
+					timestamp: new Date().toISOString(),
 				});
-
-			} catch (error) {
-				if (this.continueOnFail()) {
-					returnData.push({
-						json: {
-							error: error.message,
-						},
-						pairedItem: itemIndex,
-					});
-					continue;
-				}
-				throw new NodeOperationError(this.getNode(), error);
 			}
 		}
-
-		return [returnData];
+		
+		// Apply max messages limit if set
+		const maxMessages = threadOptions.maxMessages as number;
+		if (maxMessages && messages.length > maxMessages) {
+			const systemMessages = messages.filter(m => m.role === 'system');
+			const nonSystemMessages = messages.filter(m => m.role !== 'system');
+			const limitedMessages = nonSystemMessages.slice(-(maxMessages - systemMessages.length));
+			messages = [...systemMessages, ...limitedMessages];
+		}
+		
+		// Process features
+		const processedMessages = nodeInstance.processMessages(messages, features);
+		
+		// Prepare output
+		const output: IDataObject = {
+			messages: processedMessages,
+			action: body.action || 'send',
+			displayMode,
+			features,
+			uiState: {
+				...uiSettings,
+				lastInteraction: new Date().toISOString(),
+			},
+			context: {
+				thread_id: threadId,
+				session_id: body.session_id || `session_${Date.now()}`,
+				folder: threadOptions.folder || 'default',
+				webhook_headers: headers,
+				webhook_query: query,
+			},
+		};
+		
+		// Add file settings if files feature is enabled
+		if (features.includes('files')) {
+			output.fileSettings = fileSettings;
+		}
+		
+		// Add export settings if export feature is enabled
+		if (features.includes('export')) {
+			output.exportSettings = exportSettings;
+		}
+		
+		// Handle any files from webhook
+		if (files.length > 0) {
+			try {
+				output.files = nodeInstance.processFiles(files, fileSettings);
+			} catch (error) {
+				output.fileError = error.message;
+			}
+		}
+		
+		return {
+			workflowData: [
+				this.helpers.returnJsonArray([output]),
+			],
+		};
 	}
 
 	// Helper method to process messages based on features
