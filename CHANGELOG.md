@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5] - 2025-08-28
+
+### Added
+- New simplified webhook trigger node (BetterChatSimple) for debugging loading issues
+- Minimal implementation with basic webhook functionality
+
+### Changed
+- Added second node to package to help identify loading problems
+- Testing different implementation patterns
+
+### Fixed
+- Attempting to resolve persistent "package could not be loaded" error
+
 ## [0.1.4] - 2025-01-28
 
 ### Changed
