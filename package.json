@@ -1,0 +1,58 @@
+{
+  "name": "n8n-nodes-better-chat",
+  "version": "0.1.0",
+  "description": "A sophisticated chat UI node for n8n workflows with rich text rendering, file handling, and advanced conversation features",
+  "keywords": [
+    "n8n-community-node-package",
+    "chat",
+    "ai",
+    "conversation",
+    "ui",
+    "markdown",
+    "assistant",
+    "interface"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/jezweb/n8n-nodes-better-chat",
+  "author": {
+    "name": "Jeremy Dawes",
+    "email": "jeremy@jezweb.net"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jezweb/n8n-nodes-better-chat.git"
+  },
+  "engines": {
+    "node": ">=20.15"
+  },
+  "main": "index.js",
+  "scripts": {
+    "build": "npx rimraf dist && tsc && gulp build:icons",
+    "dev": "tsc --watch",
+    "format": "prettier nodes credentials --write",
+    "lint": "eslint nodes credentials package.json",
+    "lintfix": "eslint nodes credentials package.json --fix",
+    "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [],
+    "nodes": [
+      "dist/nodes/BetterChatUI/BetterChatUI.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@typescript-eslint/parser": "~8.32.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-n8n-nodes-base": "^1.16.3",
+    "gulp": "^5.0.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
