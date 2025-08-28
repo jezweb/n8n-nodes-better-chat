@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-better-chat",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A sophisticated chat UI node for n8n workflows with rich text rendering, file handling, and advanced conversation features",
   "keywords": [
     "n8n-community-node-package",
@@ -25,7 +25,7 @@
   "engines": {
     "node": ">=20.15"
   },
-  "main": "dist/index.js",
+  "main": "index.js",
   "scripts": {
     "build": "npx rimraf dist && tsc && gulp build:icons",
     "dev": "tsc --watch",
