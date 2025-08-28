@@ -1,5 +1,7 @@
 # n8n Better Chat UI Node
 
+[![npm version](https://badge.fury.io/js/n8n-nodes-better-chat.svg)](https://www.npmjs.com/package/n8n-nodes-better-chat)
+
 A sophisticated chat UI node for n8n workflows that provides rich text rendering, file handling, and advanced conversation features while respecting n8n's architectural patterns.
 
 ## Features

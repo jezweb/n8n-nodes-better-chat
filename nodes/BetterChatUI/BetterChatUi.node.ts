@@ -6,12 +6,13 @@ import {
 	IDataObject,
 	NodeOperationError,
 	NodeConnectionType,
+	ApplicationError,
 } from 'n8n-workflow';
 
 export class BetterChatUI implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Better Chat UI',
-		name: 'betterChatUI',
+		name: 'betterChatUi',
 		icon: 'file:chat.svg',
 		group: ['transform'],
 		version: 1,
@@ -55,11 +56,6 @@ export class BetterChatUI implements INodeType {
 				type: 'multiOptions',
 				options: [
 					{
-						name: 'Markdown Rendering',
-						value: 'markdown',
-						description: 'Render Markdown formatted text in messages',
-					},
-					{
 						name: 'Code Highlighting',
 						value: 'codeHighlight',
 						description: 'Syntax highlighting for code blocks',
@@ -70,9 +66,9 @@ export class BetterChatUI implements INodeType {
 						description: 'Add copy button to messages',
 					},
 					{
-						name: 'Regenerate',
-						value: 'regenerate',
-						description: 'Allow regenerating AI responses',
+						name: 'Export Chat',
+						value: 'export',
+						description: 'Enable conversation export functionality',
 					},
 					{
 						name: 'File Upload',
@@ -80,19 +76,19 @@ export class BetterChatUI implements INodeType {
 						description: 'Enable file upload functionality',
 					},
 					{
-						name: 'Voice Input',
-						value: 'voice',
-						description: 'Allow voice input for messages',
-					},
-					{
-						name: 'Export Chat',
-						value: 'export',
-						description: 'Enable conversation export functionality',
+						name: 'Markdown Rendering',
+						value: 'markdown',
+						description: 'Render Markdown formatted text in messages',
 					},
 					{
 						name: 'Pin Messages',
 						value: 'pin',
 						description: 'Allow pinning important messages',
+					},
+					{
+						name: 'Regenerate',
+						value: 'regenerate',
+						description: 'Allow regenerating AI responses',
 					},
 					{
 						name: 'Search',
@@ -103,6 +99,11 @@ export class BetterChatUI implements INodeType {
 						name: 'Timestamps',
 						value: 'timestamps',
 						description: 'Show message timestamps',
+					},
+					{
+						name: 'Voice Input',
+						value: 'voice',
+						description: 'Allow voice input for messages',
 					},
 				],
 				default: ['markdown', 'codeHighlight', 'copy', 'timestamps'],
@@ -186,25 +187,11 @@ export class BetterChatUI implements INodeType {
 				default: {},
 				options: [
 					{
-						displayName: 'Theme',
-						name: 'theme',
-						type: 'options',
-						options: [
-							{
-								name: 'Light',
-								value: 'light',
-							},
-							{
-								name: 'Dark',
-								value: 'dark',
-							},
-							{
-								name: 'Auto',
-								value: 'auto',
-							},
-						],
-						default: 'auto',
-						description: 'Color theme for the chat interface',
+						displayName: 'Compact Mode',
+						name: 'compactMode',
+						type: 'boolean',
+						default: false,
+						description: 'Whether to use compact message spacing',
 					},
 					{
 						displayName: 'Font Size',
@@ -228,7 +215,7 @@ export class BetterChatUI implements INodeType {
 						description: 'Text size in the chat interface',
 					},
 					{
-						displayName: 'Max Height (px)',
+						displayName: 'Max Height (Px)',
 						name: 'maxHeight',
 						type: 'number',
 						default: 600,
@@ -242,11 +229,25 @@ export class BetterChatUI implements INodeType {
 						description: 'Whether to show user and assistant avatars',
 					},
 					{
-						displayName: 'Compact Mode',
-						name: 'compactMode',
-						type: 'boolean',
-						default: false,
-						description: 'Whether to use compact message spacing',
+						displayName: 'Theme',
+						name: 'theme',
+						type: 'options',
+						options: [
+							{
+								name: 'Light',
+								value: 'light',
+							},
+							{
+								name: 'Dark',
+								value: 'dark',
+							},
+							{
+								name: 'Auto',
+								value: 'auto',
+							},
+						],
+						default: 'auto',
+						description: 'Color theme for the chat interface',
 					},
 				],
 			},
@@ -449,7 +450,15 @@ export class BetterChatUI implements INodeType {
 
 				// Handle any files from input
 				if (inputData.files && Array.isArray(inputData.files)) {
-					output.files = nodeInstance.processFiles(inputData.files, fileSettings);
+					try {
+						output.files = nodeInstance.processFiles(inputData.files, fileSettings);
+					} catch (error) {
+						if (this.continueOnFail()) {
+							output.fileError = error.message;
+						} else {
+							throw new NodeOperationError(this.getNode(), error.message);
+						}
+					}
 				}
 
 				returnData.push({
@@ -524,12 +533,12 @@ export class BetterChatUI implements INodeType {
 			// Validate file type
 			const extension = '.' + file.name.split('.').pop()?.toLowerCase();
 			if (!allowedTypes.includes(extension)) {
-				throw new Error(`File type ${extension} is not allowed`);
+				throw new ApplicationError(`File type ${extension} is not allowed`);
 			}
 
 			// Validate file size (if provided)
 			if (file.size && file.size > maxFileSize) {
-				throw new Error(`File ${file.name} exceeds maximum size of ${settings.maxFileSize}MB`);
+				throw new ApplicationError(`File ${file.name} exceeds maximum size of ${settings.maxFileSize}MB`);
 			}
 
 			// Process based on storage mode
