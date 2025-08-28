@@ -1,8 +1,9 @@
 # n8n Better Chat UI Node
 
 [![npm version](https://badge.fury.io/js/n8n-nodes-better-chat.svg)](https://www.npmjs.com/package/n8n-nodes-better-chat)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-A webhook-based chat trigger node for n8n workflows that provides rich text rendering, file handling, and advanced conversation features. This node receives chat messages via webhook and initiates workflows with rich formatting capabilities.
+A powerful webhook-based chat trigger node for n8n workflows with native AI Agent support. This node receives chat messages via webhook and provides seamless integration with n8n's AI Agent nodes while supporting rich text rendering, conversation threading, and advanced UI features.
 
 ## Features
 
@@ -21,11 +22,14 @@ A webhook-based chat trigger node for n8n workflows that provides rich text rend
 - **Search** - Find messages within conversations
 - **Export** - Download conversations in JSON, Markdown, or HTML
 
-### 🤖 AI Integration
+### 🤖 AI Agent Integration (New in v0.1.17!)
+- **Native AI Agent Support** - Direct `chatInput` field for seamless integration
+- **Output Format Options** - Choose between AI-optimized or detailed output
 - **Works with Any AI Agent** - Compatible with all n8n AI nodes
 - **System Prompt Override** - Customize AI behavior on the fly
 - **Context Management** - Intelligent message history handling
 - **Tool Compatible** - Can be used as a tool by AI Agents
+- **Session & Thread Tracking** - Automatic conversation management
 
 ### 🏗️ Architecture
 - **Separation of Concerns** - UI only, no state management
@@ -44,8 +48,15 @@ A webhook-based chat trigger node for n8n workflows that provides rich text rend
 ### Via Command Line
 ```bash
 cd /path/to/n8n
-npm install n8n-nodes-better-chat
+npm install n8n-nodes-better-chat@latest
 n8n start
+```
+
+### Update to Latest Version
+```bash
+npm update n8n-nodes-better-chat
+# or specific version
+npm install n8n-nodes-better-chat@0.1.17
 ```
 
 ### From Source (Development)
@@ -64,42 +75,59 @@ n8n start
 
 ### Basic Setup
 
-1. **Add the Node**: Drag the "Better Chat UI" node from the trigger nodes panel
-2. **Configure Webhook Path**: Set the path for receiving chat messages (default: `chat`)
-3. **Configure Display Mode**:
+1. **Add the Node**: Drag the "Chat UI Trigger" node from the trigger nodes panel
+2. **Configure Webhook Path**: Set the path for receiving chat messages (default: `webhook`)
+3. **Choose Output Format** (v0.1.17+):
+   - `AI Agent Compatible`: Optimized for AI Agent nodes (default)
+   - `Detailed`: Full output with all metadata
+4. **Configure Display Mode**:
    - `Simple`: Basic chat interface
-   - `Rich`: Markdown and code highlighting enabled
-   - `Advanced`: All features including threading and folders
-4. **Connect to AI Agent**: Link the output to an AI Agent node
-5. **Get Webhook URL**: Copy the webhook URL from the node to use in your chat interface
+   - `Rich`: Markdown and code highlighting enabled (default)
+5. **Connect to AI Agent**: Link the output to an AI Agent node
+6. **Get Webhook URL**: Click "Webhook URLs" to reveal Test and Production URLs
 
 ### Example Workflows
 
-#### Simple Chat with OpenAI
+#### Simple Chat with AI Agent (v0.1.17+)
 ```
-[Better Chat UI Webhook] → [OpenAI Chat Model] → [Respond to Webhook]
+[Chat UI Trigger] → [AI Agent] → [Respond to Webhook]
+     ↓                   ↑
+  chatInput         {{ $json.chatInput }}
 ```
 
 #### Chat with Memory
 ```
-[Better Chat UI Webhook] → [AI Agent] ← [Window Buffer Memory]
-                               ↓
-                        [Respond to Webhook]
+[Chat UI Trigger] → [AI Agent] ← [Window Buffer Memory]
+                        ↓
+                  [Respond to Webhook]
 ```
 
 #### Advanced Setup with Tools
 ```
-[Better Chat UI Webhook] → [AI Agent] → [Tool Nodes]
-                               ↓            ↓
-                        [Respond to Webhook]
+[Chat UI Trigger] → [AI Agent] → [Tool Nodes]
+                        ↓            ↓
+                  [Respond to Webhook]
 ```
 
 ## Configuration Options
 
+### Output Format (v0.1.17+)
+- **AI Agent Compatible** (default): Simplified output with `chatInput` field for AI Agent nodes
+  ```json
+  {
+    "chatInput": "user message",
+    "sessionId": "session_123",
+    "threadId": "thread_456",
+    "messages": [...],
+    "messageCount": 2,
+    "timestamp": "2025-08-28T12:00:00Z"
+  }
+  ```
+- **Detailed**: Full output with all metadata, context, and raw webhook data
+
 ### Display Modes
 - **Simple**: Clean, minimal interface for basic conversations
-- **Rich**: Enhanced with Markdown and code highlighting
-- **Advanced**: Full-featured with threading, folders, and search
+- **Rich** (default): Enhanced with Markdown and code highlighting
 
 ### Features (Multi-select)
 - `Markdown Rendering` - Format text with Markdown
@@ -129,9 +157,10 @@ n8n start
 
 | Property | Type | Description | Default |
 |----------|------|-------------|---------|
-| webhookPath | string | Path for webhook endpoint | chat |
+| webhookPath | string | Path for webhook endpoint | webhook |
+| outputFormat | options | Output structure (aiAgent/detailed) | aiAgent |
 | displayMode | options | Interface complexity level | rich |
-| features | multiOptions | Enabled features | markdown, codeHighlight, copy, timestamps |
+| features | multiOptions | Enabled features | markdown, timestamps |
 | systemPrompt | string | Override AI system prompt | - |
 | threadOptions | collection | Thread management settings | - |
 | uiSettings | collection | Interface customization | - |

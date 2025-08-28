@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.17] - 2025-08-28
+
+### Added
+- **AI Agent Compatibility**: Native `chatInput` field for seamless AI Agent integration
+- **Output Format Options**: New parameter to choose between AI-optimized and detailed output
+  - "AI Agent Compatible" mode provides simplified structure
+  - "Detailed" mode includes all metadata and context
+- Automatic session and thread ID generation
+- Message count tracking in output
+
+### Changed
+- Default output format set to "AI Agent Compatible" for better out-of-box experience
+- Improved message processing with feature-based enhancements
+
+## [0.1.16] - 2025-08-28
+
+### Fixed
+- **CRITICAL**: Resolved file structure issue causing "ENOENT: no such file or directory" error
+- Fixed gulp build process to copy JS files to correct dist/nodes/ directory
+- Files now properly located at dist/nodes/MinimalWebhook/MinimalWebhook.node.js
+
+### Changed  
+- Updated build process to automatically handle file structure
+- ESLint configuration fixed to exclude package.json
+- Added ESLint disable for correct "px" unit abbreviation
+
+## [0.1.15] - 2025-08-28
+
+### Fixed
+- Reverted incorrect "Px" capitalization back to standard "px"
+- Added ESLint disable comment to prevent future false positives
+
+## [0.1.14] - 2025-08-28
+
+### Changed
+- **BREAKING**: ESLint "fix" that incorrectly changed "px" to "Px" (caused loading failure)
+
 ## [0.1.13] - 2025-08-28
 
 ### Changed
