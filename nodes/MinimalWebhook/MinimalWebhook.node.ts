@@ -70,7 +70,7 @@ export class MinimalWebhook implements INodeType {
 					{
 						name: 'Hosted Chat',
 						value: 'hosted',
-						description: 'n8n provides a hosted chat interface with URL',
+						description: 'N8n provides a hosted chat interface with URL',
 					},
 					{
 						name: 'Embedded Chat',
