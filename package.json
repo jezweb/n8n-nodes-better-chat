@@ -30,9 +30,9 @@
     "build": "npx rimraf dist && tsc && gulp build:icons",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials --write",
-    "lint": "eslint nodes package.json",
-    "lintfix": "eslint nodes package.json --fix",
-    "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes package.json"
+    "lint": "eslint nodes",
+    "lintfix": "eslint nodes --fix",
+    "prepublishOnly": "npm run build && npm run lint"
   },
   "files": [
     "dist"

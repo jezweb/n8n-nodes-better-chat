@@ -149,7 +149,7 @@ export class MinimalWebhook implements INodeType {
 						description: 'Whether to use compact message spacing',
 					},
 					{
-						displayName: 'Max Height (px)',
+						displayName: 'Max Height (Px)',
 						name: 'maxHeight',
 						type: 'number',
 						default: 600,
