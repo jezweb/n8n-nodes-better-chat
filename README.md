@@ -1,48 +1,257 @@
-![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
+# n8n Better Chat UI Node
 
-# n8n-nodes-starter
+A sophisticated chat UI node for n8n workflows that provides rich text rendering, file handling, and advanced conversation features while respecting n8n's architectural patterns.
 
-This repo contains example nodes to help you get started building your own custom integrations for [n8n](https://n8n.io). It includes the node linter and other dependencies.
+## Features
 
-To make your custom node available to the community, you must create it as an npm package, and [submit it to the npm registry](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry).
+### 🎨 Rich User Interface
+- **Markdown Rendering** - Full Markdown support for formatted messages
+- **Code Highlighting** - Syntax highlighting for multiple programming languages
+- **Theme Support** - Light, dark, and auto themes
+- **Responsive Design** - Adapts to different screen sizes
 
-If you would like your node to be available on n8n cloud you can also [submit your node for verification](https://docs.n8n.io/integrations/creating-nodes/deploy/submit-community-nodes/).
+### 💬 Advanced Chat Features
+- **Conversation Threading** - Organize chats into threads
+- **Folder Organization** - Categorize conversations visually
+- **Message Actions** - Copy, regenerate, pin important messages
+- **File Uploads** - Handle documents, images, and other files
+- **Voice Input** - Support for voice messages (when enabled)
+- **Search** - Find messages within conversations
+- **Export** - Download conversations in JSON, Markdown, or HTML
 
-## Prerequisites
+### 🤖 AI Integration
+- **Works with Any AI Agent** - Compatible with all n8n AI nodes
+- **System Prompt Override** - Customize AI behavior on the fly
+- **Context Management** - Intelligent message history handling
+- **Tool Compatible** - Can be used as a tool by AI Agents
 
-You need the following installed on your development machine:
+### 🏗️ Architecture
+- **Separation of Concerns** - UI only, no state management
+- **n8n Native** - Follows established n8n patterns
+- **No External Dependencies** - Self-contained node
+- **Performance Optimized** - Efficient rendering and data handling
 
-* [git](https://git-scm.com/downloads)
-* Node.js and npm. Minimum version Node 20. You can find instructions on how to install both using nvm (Node Version Manager) for Linux, Mac, and WSL [here](https://github.com/nvm-sh/nvm). For Windows users, refer to Microsoft's guide to [Install NodeJS on Windows](https://docs.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-windows).
-* Install n8n with:
-  ```
-  npm install n8n -g
-  ```
-* Recommended: follow n8n's guide to [set up your development environment](https://docs.n8n.io/integrations/creating-nodes/build/node-development-environment/).
+## Installation
 
-## Using this starter
+### Via n8n UI (Recommended)
+1. Navigate to **Settings** → **Community Nodes**
+2. Search for `n8n-nodes-better-chat`
+3. Click **Install**
+4. Restart n8n if prompted
 
-These are the basic steps for working with the starter. For detailed guidance on creating and publishing nodes, refer to the [documentation](https://docs.n8n.io/integrations/creating-nodes/).
+### Via Command Line
+```bash
+cd /path/to/n8n
+npm install n8n-nodes-better-chat
+n8n start
+```
 
-1. [Generate a new repository](https://github.com/n8n-io/n8n-nodes-starter/generate) from this template repository.
-2. Clone your new repo:
-   ```
-   git clone https://github.com/<your organization>/<your-repo-name>.git
-   ```
-3. Run `npm i` to install dependencies.
-4. Open the project in your editor.
-5. Browse the examples in `/nodes` and `/credentials`. Modify the examples, or replace them with your own nodes.
-6. Update the `package.json` to match your details.
-7. Run `npm run lint` to check for errors or `npm run lintfix` to automatically fix errors when possible.
-8. Test your node locally. Refer to [Run your node locally](https://docs.n8n.io/integrations/creating-nodes/test/run-node-locally/) for guidance.
-9. Replace this README with documentation for your node. Use the [README_TEMPLATE](README_TEMPLATE.md) to get started.
-10. Update the LICENSE file to use your details.
-11. [Publish](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry) your package to npm.
+### From Source (Development)
+```bash
+git clone https://github.com/jezweb/n8n-nodes-better-chat.git
+cd n8n-nodes-better-chat
+npm install
+npm run build
+npm link
+cd ~/.n8n/custom
+npm link n8n-nodes-better-chat
+n8n start
+```
 
-## More information
+## Usage
 
-Refer to our [documentation on creating nodes](https://docs.n8n.io/integrations/creating-nodes/) for detailed information on building your own nodes.
+### Basic Setup
+
+1. **Add the Node**: Drag the "Better Chat UI" node from the nodes panel
+2. **Configure Display Mode**:
+   - `Simple`: Basic chat interface
+   - `Rich`: Markdown and code highlighting enabled
+   - `Advanced`: All features including threading and folders
+
+3. **Connect to AI Agent**: Link the output to an AI Agent node
+
+### Example Workflows
+
+#### Simple Chat with OpenAI
+```
+[Better Chat UI] → [OpenAI Chat Model] → [Response]
+```
+
+#### Chat with Memory
+```
+[Better Chat UI] → [AI Agent] ← [Window Buffer Memory]
+        ↑              ↓
+        └──────────────┘
+```
+
+#### Advanced Setup with Tools
+```
+[Webhook Trigger] → [Better Chat UI] → [AI Agent] → [Tool Nodes]
+                            ↑              ↓            ↓
+                            └──────────────┴────────────┘
+```
+
+## Configuration Options
+
+### Display Modes
+- **Simple**: Clean, minimal interface for basic conversations
+- **Rich**: Enhanced with Markdown and code highlighting
+- **Advanced**: Full-featured with threading, folders, and search
+
+### Features (Multi-select)
+- `Markdown Rendering` - Format text with Markdown
+- `Code Highlighting` - Syntax highlighting for code blocks
+- `Copy Button` - Easy message copying
+- `Regenerate` - Allow AI response regeneration
+- `File Upload` - Enable file attachments
+- `Voice Input` - Voice message support
+- `Export Chat` - Download conversations
+- `Pin Messages` - Mark important messages
+- `Search` - Search within conversation
+- `Timestamps` - Show message timestamps
+
+### UI Settings
+- **Theme**: Light, Dark, or Auto
+- **Font Size**: Small, Medium, or Large
+- **Max Height**: Container height in pixels
+- **Show Avatars**: Display user/assistant avatars
+- **Compact Mode**: Reduced message spacing
+
+### File Settings
+- **Allowed Types**: Comma-separated extensions (e.g., `.pdf,.txt,.png`)
+- **Max File Size**: Maximum size in MB
+- **Storage Mode**: Base64 (small files) or URL reference
+
+## Node Properties
+
+| Property | Type | Description | Default |
+|----------|------|-------------|---------|
+| displayMode | options | Interface complexity level | rich |
+| features | multiOptions | Enabled features | markdown, codeHighlight, copy, timestamps |
+| message | string | User message input | - |
+| systemPrompt | string | Override AI system prompt | - |
+| threadOptions | collection | Thread management settings | - |
+| uiSettings | collection | Interface customization | - |
+| fileSettings | collection | File handling configuration | - |
+| exportSettings | collection | Export format options | - |
+
+## Output Format
+
+The node outputs a structured object that AI Agents can process:
+
+```javascript
+{
+  messages: [
+    {
+      role: 'user' | 'assistant' | 'system',
+      content: string,
+      timestamp: string,
+      metadata: {
+        thread_id: string,
+        folder: string,
+        pinned: boolean,
+        files: Array
+      }
+    }
+  ],
+  action: 'send' | 'regenerate' | 'export',
+  displayMode: string,
+  features: Array,
+  uiState: Object,
+  context: {
+    thread_id: string,
+    session_id: string,
+    folder: string
+  }
+}
+```
+
+## Best Practices
+
+### Memory Management
+- The node doesn't store conversations - use Memory nodes for persistence
+- Configure `maxMessages` in thread options to limit context size
+- Use pinned messages for important context that should always be included
+
+### Performance
+- Enable only the features you need
+- Set reasonable file size limits
+- Use URL storage mode for large files
+
+### Integration
+- Always connect to an AI Agent node for logic
+- Use Memory nodes for conversation persistence
+- Add Tool nodes for extended functionality
+
+## Troubleshooting
+
+### Node Not Appearing
+- Ensure community nodes are enabled: `N8N_COMMUNITY_PACKAGES_ENABLED=true`
+- Check n8n logs for installation errors
+- Verify the package is installed: `npm list n8n-nodes-better-chat`
+
+### Build Errors (Development)
+```bash
+rm -rf node_modules dist
+npm install
+npm run build
+```
+
+### File Upload Issues
+- Check allowed file types in settings
+- Verify file size limits
+- Ensure proper storage mode for your use case
+
+## Examples
+
+### Customer Service Bot
+```javascript
+// Connect: Webhook → Better Chat UI → AI Agent → CRM Tool
+{
+  displayMode: 'rich',
+  features: ['markdown', 'files', 'export'],
+  systemPrompt: 'You are a helpful customer service agent...'
+}
+```
+
+### Technical Assistant
+```javascript
+// Connect: Better Chat UI → AI Agent → Code Execution Tool
+{
+  displayMode: 'advanced',
+  features: ['codeHighlight', 'copy', 'search'],
+  systemPrompt: 'You are a technical assistant specializing in...'
+}
+```
+
+## Contributing
+
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## Support
+
+- **Issues**: [GitHub Issues](https://github.com/jezweb/n8n-nodes-better-chat/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/jezweb/n8n-nodes-better-chat/discussions)
+- **Documentation**: See [ARCHITECTURE.md](ARCHITECTURE.md) for technical details
 
 ## License
 
-[MIT](https://github.com/n8n-io/n8n-nodes-starter/blob/master/LICENSE.md)
+MIT - See [LICENSE.md](LICENSE.md) for details
+
+## Author
+
+Jeremy Dawes - [Jezweb](https://www.jezweb.com.au)
+
+## Acknowledgments
+
+- n8n team for the excellent workflow automation platform
+- The n8n community for inspiration and feedback
+
+---
+
+Made with ❤️ for the n8n community
