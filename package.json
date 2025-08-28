@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-better-chat",
-  "version": "0.1.5",
+  "version": "0.1.13",
   "description": "A sophisticated chat UI node for n8n workflows with rich text rendering, file handling, and advanced conversation features",
   "keywords": [
     "n8n-community-node-package",
@@ -41,8 +41,7 @@
     "n8nNodesApiVersion": 1,
     "credentials": [],
     "nodes": [
-      "dist/nodes/BetterChatUI/BetterChatUi.node.js",
-      "dist/nodes/BetterChatSimple/BetterChatSimple.node.js"
+      "dist/nodes/MinimalWebhook/MinimalWebhook.node.js"
     ]
   },
   "devDependencies": {

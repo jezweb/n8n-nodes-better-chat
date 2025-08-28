@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.13] - 2025-08-28
+
+### Changed
+- **BREAKTHROUGH**: Upgraded from minimal webhook to full chat functionality
+- Changed display name to "Chat UI Trigger" while keeping working node name
+- Added comprehensive chat message processing and conversation context
+- Added proper session/thread ID handling and message metadata
+- Added feature-based message processing (markdown, timestamps, actions)
+- Added usableAsTool flag for AI Agent compatibility
+
+### Added
+- Full conversation context with previous messages support
+- User message extraction from multiple field names (message/text/content)
+- Session and thread ID generation and tracking
+- Message metadata with source tracking
+- Context information (conversation length, user agent, IP)
+- Raw data passthrough for debugging
+- Feature-driven message enhancement (markdown, code highlighting, copy actions)
+
+## [0.1.8] - 2025-08-28
+
+### Changed
+- **DEBUGGING**: Stripped down to absolute minimal webhook trigger
+- Single node: MinimalWebhook with no properties, just webhook path
+- Removed all other nodes to isolate loading issue
+- Testing with simplest possible trigger implementation
+
+## [0.1.7] - 2025-08-28
+
+### Fixed
+- **CRITICAL**: Properly fixed file structure with all files in dist/nodes/[NodeName]/
+- Version 0.1.6 had files split between dist/ and dist/nodes/ 
+- All JS, d.ts, map, and svg files now correctly colocated
+
+## [0.1.6] - 2025-08-28
+
+### Fixed
+- **CRITICAL**: Fixed file structure issue where TypeScript compiled files to wrong directory
+- JS files were in dist/ but package.json expected them in dist/nodes/
+- Moved all compiled files to correct dist/nodes/[NodeName]/ structure
+- Icons and JS files now properly colocated in same directories
+
 ## [0.1.5] - 2025-08-28
 
 ### Added
