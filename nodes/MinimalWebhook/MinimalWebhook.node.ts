@@ -149,6 +149,7 @@ export class MinimalWebhook implements INodeType {
 						description: 'Whether to use compact message spacing',
 					},
 					{
+						// eslint-disable-next-line n8n-nodes-base/node-param-display-name-miscased
 						displayName: 'Max Height (px)',
 						name: 'maxHeight',
 						type: 'number',
