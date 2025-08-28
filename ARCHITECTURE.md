@@ -39,13 +39,17 @@ The n8n Better Chat Node is a webhook trigger node that provides a sophisticated
 
 ## Component Structure
 
-### Core Node: BetterChatUI
+### Core Node: MinimalWebhook (Chat UI Trigger)
 
 #### Purpose
-Provide a webhook-based chat trigger for n8n workflows that receives messages from external chat interfaces and processes them with rich features.
+Provide a webhook-based chat trigger for n8n workflows that receives messages from external chat interfaces, offers hosted chat UI, and processes messages with rich features.
 
 #### Responsibilities
-- Receive chat messages via webhook
+- Receive chat messages via webhook (POST)
+- Provide hosted chat interface (GET)
+- Generate chat URLs for hosted/embedded modes
+- Handle authentication (Basic Auth)
+- Manage CORS for cross-origin requests
 - Process messages with Markdown and code highlighting flags
 - Handle file uploads
 - Format messages for AI Agent consumption
@@ -60,22 +64,36 @@ Provide a webhook-based chat trigger for n8n workflows that receives messages fr
 
 ### Data Structures
 
-#### Input Schema
+#### Input Schema (Webhook POST)
 ```typescript
-interface BetterChatInput {
-  // From previous node or trigger
-  previousMessages?: Message[];
-  context?: {
-    thread_id?: string;
-    session_id?: string;
-    user_data?: any;
-  };
+interface ChatWebhookInput {
+  message: string;              // User's message text
+  messages?: Message[];         // Previous conversation history
+  session_id?: string;          // Session identifier
+  thread_id?: string;           // Thread identifier
+  files?: Array<{               // File attachments
+    name: string;
+    type: string;
+    data: string; // base64
+  }>;
 }
 ```
 
-#### Output Schema
+#### Output Schema (v0.2.0+)
 ```typescript
-interface BetterChatOutput {
+interface ChatTriggerOutput {
+  // AI Agent compatibility field
+  chatInput: string;            // User's message for AI Agent
+  
+  // Chat configuration (hosted/embedded modes)
+  chatMode: 'webhook' | 'hosted' | 'embedded';
+  chatUrl?: string;             // Generated chat URL for hosted mode
+  publicAvailable?: boolean;    // Public access toggle
+  authentication?: 'none' | 'basic';
+  allowedOrigins?: string;      // CORS configuration
+  initialMessage?: string;      // Welcome message
+  
+  // Standard output
   messages: Array<{
     role: 'user' | 'assistant' | 'system';
     content: string;
@@ -109,17 +127,17 @@ The node follows n8n community node patterns discovered from working examples:
 ```
 n8n-nodes-better-chat/
 ├── nodes/
-│   └── BetterChatUI/
-│       ├── BetterChatUi.node.ts    # Main node implementation
-│       └── chat.svg                # Node icon
+│   └── MinimalWebhook/
+│       ├── MinimalWebhook.node.ts  # Main node implementation
+│       └── webhook.svg              # Node icon
 ├── dist/                           # Compiled output (auto-generated)
-│   └── nodes/BetterChatUI/
-│       ├── BetterChatUi.node.js    # Compiled node (referenced in package.json)
-│       ├── BetterChatUi.node.d.ts  # Type definitions
-│       └── chat.svg                # Copied icon
+│   └── nodes/MinimalWebhook/
+│       ├── MinimalWebhook.node.js  # Compiled node (referenced in package.json)
+│       ├── MinimalWebhook.node.d.ts # Type definitions
+│       └── webhook.svg              # Copied icon
 ├── package.json                    # Package configuration (main: "index.js" but NO actual file)
 ├── tsconfig.json                   # TypeScript configuration
-├── gulpfile.js                     # Build automation
+├── gulpfile.js                     # Build automation (copies JS to dist/nodes/)
 └── README.md                       # Documentation
 ```
 
@@ -135,30 +153,53 @@ The node is implemented as a webhook trigger (`group: ['trigger']`) with:
 - Webhook configuration for receiving external messages
 - `webhook()` method instead of `execute()` method
 
+## Chat Access Modes (v0.2.0+)
+
+### Webhook Mode
+Basic webhook endpoint for custom integrations:
+- POST requests only
+- Custom chat interfaces
+- Full control over UI
+
+### Hosted Mode
+n8n provides a complete chat interface:
+- GET requests serve HTML chat UI
+- POST requests handle messages
+- Built-in authentication support
+- Public/Test mode toggle
+- Generated chat URLs
+
+### Embedded Mode
+Integration with @n8n/chat widget:
+- CORS configuration
+- Authentication support
+- Widget-compatible responses
+
 ## Integration Patterns
 
-### Pattern 1: Simple Chat
+### Pattern 1: Simple Chat (Webhook Mode)
 ```
-[Better Chat UI] → [AI Agent] → [Better Chat UI]
-```
-
-### Pattern 2: Chat with Memory
-```
-[Better Chat UI] → [AI Agent] ← [Memory Node]
-        ↑              ↓
-        └──────────────┘
+[External Chat] → [Webhook] → [Chat Trigger] → [AI Agent] → [Response]
 ```
 
-### Pattern 3: Chat with Tools
+### Pattern 2: Hosted Chat Interface
 ```
-[Better Chat UI] → [AI Agent] → [Tool Nodes]
-        ↑              ↓            ↓
-        └──────────────┴────────────┘
+[Browser] → GET [Chat Trigger] → HTML Interface
+    ↓                                    ↑
+    └── POST Message ──→ [AI Agent] ────┘
 ```
 
-### Pattern 4: Webhook-Triggered Chat
+### Pattern 3: Chat with Memory
 ```
-[Webhook] → [Better Chat UI] → [AI Agent] → [Response]
+[Chat Trigger] → [AI Agent] ← [Memory Node]
+       ↑              ↓
+       └──────────────┘
+```
+
+### Pattern 4: Embedded Widget
+```
+[@n8n/chat Widget] → [Chat Trigger] → [AI Agent] → [Response]
+     (CORS enabled)
 ```
 
 ## Feature Architecture

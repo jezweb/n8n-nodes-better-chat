@@ -3,15 +3,27 @@
 [![npm version](https://badge.fury.io/js/n8n-nodes-better-chat.svg)](https://www.npmjs.com/package/n8n-nodes-better-chat)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-A powerful webhook-based chat trigger node for n8n workflows with native AI Agent support. This node receives chat messages via webhook and provides seamless integration with n8n's AI Agent nodes while supporting rich text rendering, conversation threading, and advanced UI features.
+A feature-rich chat trigger node for n8n workflows with multiple access modes including hosted chat interface, webhook endpoint, and embedded widget support. Provides native AI Agent integration, authentication, CORS configuration, and advanced UI features.
 
 ## Features
+
+### 🚀 Chat Access Modes (New in v0.2.0!)
+- **Webhook Mode** - Basic webhook endpoint for custom integrations
+- **Hosted Chat** - Complete chat interface provided by n8n with generated URL
+- **Embedded Chat** - Compatible with @n8n/chat widget for embedding
+
+### 🔐 Security & Access Control
+- **Authentication** - Support for Basic Auth to restrict access
+- **CORS Configuration** - Control allowed origins for cross-origin requests
+- **Public/Private Toggle** - Switch between test and production modes
+- **Session Management** - Track conversations with session and thread IDs
 
 ### 🎨 Rich User Interface
 - **Markdown Rendering** - Full Markdown support for formatted messages
 - **Code Highlighting** - Syntax highlighting for multiple programming languages
 - **Theme Support** - Light, dark, and auto themes
 - **Responsive Design** - Adapts to different screen sizes
+- **Custom Welcome Message** - Configure initial greeting
 
 ### 💬 Advanced Chat Features
 - **Conversation Threading** - Organize chats into threads
@@ -22,7 +34,7 @@ A powerful webhook-based chat trigger node for n8n workflows with native AI Agen
 - **Search** - Find messages within conversations
 - **Export** - Download conversations in JSON, Markdown, or HTML
 
-### 🤖 AI Agent Integration (New in v0.1.17!)
+### 🤖 AI Agent Integration
 - **Native AI Agent Support** - Direct `chatInput` field for seamless integration
 - **Output Format Options** - Choose between AI-optimized or detailed output
 - **Works with Any AI Agent** - Compatible with all n8n AI nodes
@@ -56,7 +68,7 @@ n8n start
 ```bash
 npm update n8n-nodes-better-chat
 # or specific version
-npm install n8n-nodes-better-chat@0.1.17
+npm install n8n-nodes-better-chat@0.2.0
 ```
 
 ### From Source (Development)
@@ -76,19 +88,33 @@ n8n start
 ### Basic Setup
 
 1. **Add the Node**: Drag the "Chat UI Trigger" node from the trigger nodes panel
-2. **Configure Webhook Path**: Set the path for receiving chat messages (default: `webhook`)
-3. **Choose Output Format** (v0.1.17+):
+2. **Choose Chat Access Mode** (v0.2.0+):
+   - `Webhook Only`: Basic webhook endpoint
+   - `Hosted Chat`: n8n provides chat interface with URL
+   - `Embedded Chat`: For @n8n/chat widget integration
+3. **Configure Webhook Path**: Set the path for receiving chat messages (default: `webhook`)
+4. **Choose Output Format**:
    - `AI Agent Compatible`: Optimized for AI Agent nodes (default)
    - `Detailed`: Full output with all metadata
-4. **Configure Display Mode**:
-   - `Simple`: Basic chat interface
-   - `Rich`: Markdown and code highlighting enabled (default)
-5. **Connect to AI Agent**: Link the output to an AI Agent node
-6. **Get Webhook URL**: Click "Webhook URLs" to reveal Test and Production URLs
+5. **Configure Security** (for Hosted/Embedded modes):
+   - Set authentication (None/Basic Auth)
+   - Configure allowed origins for CORS
+   - Toggle public availability
+6. **Connect to AI Agent**: Link the output to an AI Agent node
+7. **Get Access URL**: 
+   - For Webhook: Click "Webhook URLs"
+   - For Hosted: Check the `chatUrl` in output or node UI
 
 ### Example Workflows
 
-#### Simple Chat with AI Agent (v0.1.17+)
+#### Hosted Chat Interface (v0.2.0+)
+```
+Browser → GET [Chat UI Trigger] → Serves HTML Interface
+   ↓                                        ↑
+   └── POST Message → [AI Agent] → Response ┘
+```
+
+#### Simple Webhook Integration
 ```
 [Chat UI Trigger] → [AI Agent] → [Respond to Webhook]
      ↓                   ↑
@@ -102,16 +128,21 @@ n8n start
                   [Respond to Webhook]
 ```
 
-#### Advanced Setup with Tools
+#### Embedded Widget (@n8n/chat)
 ```
-[Chat UI Trigger] → [AI Agent] → [Tool Nodes]
-                        ↓            ↓
-                  [Respond to Webhook]
+[@n8n/chat Widget] → [Chat UI Trigger] → [AI Agent]
+   (CORS enabled)            ↓
+                     [Respond to Webhook]
 ```
 
 ## Configuration Options
 
-### Output Format (v0.1.17+)
+### Chat Access Mode (v0.2.0+)
+- **Webhook Only**: Basic webhook endpoint for custom integrations
+- **Hosted Chat**: n8n provides a complete chat interface with generated URL
+- **Embedded Chat**: Compatible with @n8n/chat widget for embedding
+
+### Output Format
 - **AI Agent Compatible** (default): Simplified output with `chatInput` field for AI Agent nodes
   ```json
   {
@@ -120,10 +151,16 @@ n8n start
     "threadId": "thread_456",
     "messages": [...],
     "messageCount": 2,
-    "timestamp": "2025-08-28T12:00:00Z"
+    "timestamp": "2025-08-28T12:00:00Z",
+    "chatUrl": "https://n8n.example.com/chat/workflow-id"
   }
   ```
 - **Detailed**: Full output with all metadata, context, and raw webhook data
+
+### Security Options
+- **Authentication**: None or Basic Auth (username/password)
+- **Allowed Origins**: Comma-separated list for CORS (default: *)
+- **Public Available**: Toggle between test and production modes
 
 ### Display Modes
 - **Simple**: Clean, minimal interface for basic conversations
@@ -157,15 +194,18 @@ n8n start
 
 | Property | Type | Description | Default |
 |----------|------|-------------|---------|
+| chatMode | options | Access mode (webhook/hosted/embedded) | webhook |
 | webhookPath | string | Path for webhook endpoint | webhook |
+| publicAvailable | boolean | Public access for hosted chat | false |
+| authentication | options | Auth type (none/basic) | none |
+| authUsername | string | Username for Basic Auth | - |
+| authPassword | string | Password for Basic Auth | - |
+| allowedOrigins | string | CORS allowed origins | * |
+| initialMessage | string | Welcome message for hosted chat | Hi! How can I help you today? |
 | outputFormat | options | Output structure (aiAgent/detailed) | aiAgent |
 | displayMode | options | Interface complexity level | rich |
 | features | multiOptions | Enabled features | markdown, timestamps |
-| systemPrompt | string | Override AI system prompt | - |
-| threadOptions | collection | Thread management settings | - |
 | uiSettings | collection | Interface customization | - |
-| fileSettings | collection | File handling configuration | - |
-| exportSettings | collection | Export format options | - |
 
 ## Output Format
 

@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-08-28
+
+### Added
+- **Chat Access Modes**: Three ways to use the chat trigger
+  - Webhook Only: Basic webhook endpoint for custom integrations
+  - Hosted Chat: Complete chat interface provided by n8n with generated URL
+  - Embedded Chat: Compatible with @n8n/chat widget for embedding
+- **Hosted Chat Interface**: Built-in HTML chat UI served on GET requests
+  - Modern, responsive design with dark mode support
+  - Real-time message display and input
+  - Auto-generated chat URL based on workflow ID
+  - Test mode support with public/private toggle
+- **Authentication**: Security options for chat access
+  - None: Open access (default)
+  - Basic Auth: Username/password protection
+- **CORS Configuration**: Control cross-origin access
+  - Configurable allowed origins
+  - Support for embedded widget scenarios
+- **Chat URL Generation**: Automatic URL creation for hosted mode
+  - Test URL for workflow development
+  - Production URL for active workflows
+- **Enhanced Security**: Multiple security layers
+  - Public availability toggle
+  - Authentication enforcement
+  - CORS origin validation
+- **Welcome Message**: Customizable initial greeting for hosted chat
+
+### Changed
+- HTTP method handling now supports both GET (interface) and POST (messages)
+- Node now serves different responses based on chat mode and HTTP method
+- Enhanced parameter organization with conditional display
+- Improved webhook URL display with mode-specific information
+
+### Technical
+- Added inline HTML generation for hosted chat interface
+- Implemented multi-method webhook handling (GET/POST)
+- Added workflow context extraction for chat URL generation
+- Conditional parameter visibility based on chat mode
+
 ## [0.1.17] - 2025-08-28
 
 ### Added
