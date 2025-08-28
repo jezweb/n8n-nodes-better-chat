@@ -135,10 +135,29 @@ User Input → [Better Chat UI] → Format Message → [AI Agent]
 - License: MIT
 - Repository: github.com/jezweb/n8n-nodes-better-chat
 
+## Analysis: Working Node vs Broken Node
+
+### Key Discovery from Cloudflare AutoRAG Comparison
+- **Working node has NO root index.js file** despite `"main": "index.js"` in package.json
+- n8n **ignores the main field** and only uses `n8n.nodes` array paths
+- Our root index.js file might be **causing conflicts** in n8n's loading process
+
+### Current Issues (v0.1.2)
+- Package loads correctly in isolation but fails in n8n
+- "The specified package could not be loaded" error persists
+- Architecture mismatch: Chat UI should be trigger, not transform
+
+### Solution Plan
+1. **Remove conflicting files**: Delete root index.js and index.ts
+2. **Follow working pattern**: Match exactly what works in AutoRAG node  
+3. **Rethink architecture**: Consider trigger vs transform node type
+4. **Test systematically**: Build, publish, test installation
+
 ## Current Blockers
-None yet
+Root index.js file conflicts with n8n's community node loading mechanism
 
 ## Next Steps
-1. Update package.json with project details
-2. Create ARCHITECTURE.md
-3. Implement BetterChatUI.node.ts
+1. Remove root index files to match working node pattern
+2. Change node group from 'transform' to 'trigger' for better fit
+3. Test build and publish v0.1.3
+4. Update documentation with architectural decisions

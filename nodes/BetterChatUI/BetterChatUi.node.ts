@@ -14,7 +14,7 @@ export class BetterChatUI implements INodeType {
 		displayName: 'Better Chat UI',
 		name: 'betterChatUi',
 		icon: 'file:chat.svg',
-		group: ['transform'],
+		group: ['trigger'],
 		version: 1,
 		subtitle: '={{$parameter["displayMode"]}}',
 		description: 'A sophisticated chat UI node for n8n workflows with rich text rendering, file handling, and advanced conversation features. Use this to create beautiful chat interfaces for AI agents.',
