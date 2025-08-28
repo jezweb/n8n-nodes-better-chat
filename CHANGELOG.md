@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2025-08-28
+
+### Fixed
+- HTML response rendering for hosted chat mode now displays properly
+- Webhook response format corrected to serve HTML with proper headers
+- Fixed issue where HTML was being serialized as JSON instead of rendered
+
 ## [0.2.0] - 2025-08-28
 
 ### Added
