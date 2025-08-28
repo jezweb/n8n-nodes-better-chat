@@ -85,6 +85,25 @@ export class MinimalWebhook implements INodeType {
 				description: 'Chat interface display mode',
 			},
 			{
+				displayName: 'Output Format',
+				name: 'outputFormat',
+				type: 'options',
+				options: [
+					{
+						name: 'AI Agent Compatible',
+						value: 'aiAgent',
+						description: 'Simplified output with chatInput field for AI Agent nodes',
+					},
+					{
+						name: 'Detailed',
+						value: 'detailed',
+						description: 'Full output with all metadata and context',
+					},
+				],
+				default: 'aiAgent',
+				description: 'Choose output structure format',
+			},
+			{
 				displayName: 'Features',
 				name: 'features',
 				type: 'multiOptions',
@@ -169,6 +188,7 @@ export class MinimalWebhook implements INodeType {
 		
 		// Get node parameters
 		const displayMode = this.getNodeParameter('displayMode') as string;
+		const outputFormat = this.getNodeParameter('outputFormat') as string;
 		const webhookPath = this.getNodeParameter('webhookPath') as string;
 		const features = this.getNodeParameter('features') as string[];
 		const uiSettings = this.getNodeParameter('uiSettings') as object;
@@ -199,35 +219,53 @@ export class MinimalWebhook implements INodeType {
 		// Process messages with enabled features
 		const processedMessages = processMessages(messages, features);
 		
-		// Build output for AI Agent
-		const output = {
-			// Main chat data
-			messages: processedMessages,
-			userMessage,
-			sessionId,
-			threadId,
-			
-			// UI Configuration
-			displayMode,
-			features,
-			uiSettings,
-			
-			// Context
-			context: {
-				webhook_path: webhookPath,
-				conversation_length: messages.length,
-				last_interaction: new Date().toISOString(),
-				user_agent: headers['user-agent'],
-				ip_address: headers['x-forwarded-for'] || headers['x-real-ip'],
-			},
-			
-			// Raw data for debugging
-			raw: {
-				headers,
-				query,
-				body: bodyData,
-			},
-		};
+		// Build output based on selected format
+		let output: any;
+		
+		if (outputFormat === 'aiAgent') {
+			// Simplified output for AI Agent compatibility
+			output = {
+				chatInput: userMessage,  // Primary field for AI Agent
+				sessionId,
+				threadId,
+				messages: processedMessages,  // Include for context if needed
+				messageCount: messages.length,
+				timestamp: new Date().toISOString(),
+			};
+		} else {
+			// Detailed output with all metadata
+			output = {
+				// AI Agent compatibility field still included
+				chatInput: userMessage,
+				
+				// Main chat data
+				messages: processedMessages,
+				userMessage,
+				sessionId,
+				threadId,
+				
+				// UI Configuration
+				displayMode,
+				features,
+				uiSettings,
+				
+				// Context
+				context: {
+					webhook_path: webhookPath,
+					conversation_length: messages.length,
+					last_interaction: new Date().toISOString(),
+					user_agent: headers['user-agent'],
+					ip_address: headers['x-forwarded-for'] || headers['x-real-ip'],
+				},
+				
+				// Raw data for debugging
+				raw: {
+					headers,
+					query,
+					body: bodyData,
+				},
+			};
+		}
 		
 		return {
 			workflowData: [
