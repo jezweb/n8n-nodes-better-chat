@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2025-08-28
+
+### Fixed
+- Simplified HTML response handling for hosted chat mode
+- Changed webhookResponse to return HTML string directly
+- Testing different response formats to resolve rendering issues
+
+### Added
+- HTML_RESPONSE_TESTS.md documentation for troubleshooting
+
 ## [0.2.1] - 2025-08-28
 
 ### Fixed

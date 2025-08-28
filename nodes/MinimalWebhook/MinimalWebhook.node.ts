@@ -472,16 +472,10 @@ export class MinimalWebhook implements INodeType {
 </body>
 </html>`;
 			
-			// For GET requests serving HTML in onReceived mode
-			// Return the HTML directly as webhookResponse with status code
+			// Try returning just the HTML string as webhookResponse
+			// This is the simplest approach that might work with n8n
 			return {
-				webhookResponse: {
-					status: 200,
-					headers: {
-						'content-type': 'text/html; charset=utf-8',
-					},
-					body: chatHtml,
-				},
+				webhookResponse: chatHtml,
 			};
 		}
 		
