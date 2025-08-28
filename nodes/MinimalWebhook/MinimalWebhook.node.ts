@@ -51,12 +51,36 @@ export class MinimalWebhook implements INodeType {
 		webhooks: [
 			{
 				name: 'default',
-				httpMethod: 'POST',
+				httpMethod: ['GET', 'POST'] as any, // Multiple methods for hosted chat
 				responseMode: 'onReceived',
 				path: '={{$parameter["webhookPath"]}}',
 			},
 		],
 		properties: [
+			{
+				displayName: 'Chat Access Mode',
+				name: 'chatMode',
+				type: 'options',
+				options: [
+					{
+						name: 'Webhook Only',
+						value: 'webhook',
+						description: 'Basic webhook endpoint for custom integrations',
+					},
+					{
+						name: 'Hosted Chat',
+						value: 'hosted',
+						description: 'n8n provides a hosted chat interface with URL',
+					},
+					{
+						name: 'Embedded Chat',
+						value: 'embedded',
+						description: 'For use with @n8n/chat widget',
+					},
+				],
+				default: 'webhook',
+				description: 'Choose how users will access the chat interface',
+			},
 			{
 				displayName: 'Webhook Path',
 				name: 'webhookPath',
@@ -64,6 +88,93 @@ export class MinimalWebhook implements INodeType {
 				default: 'webhook',
 				required: true,
 				description: 'The path to listen for webhook requests',
+			},
+			{
+				displayName: 'Public Available',
+				name: 'publicAvailable',
+				type: 'boolean',
+				default: false,
+				description: 'Whether the chat is publicly accessible. Keep off while building, turn on when ready for users.',
+				displayOptions: {
+					show: {
+						chatMode: ['hosted'],
+					},
+				},
+			},
+			{
+				displayName: 'Authentication',
+				name: 'authentication',
+				type: 'options',
+				options: [
+					{
+						name: 'None',
+						value: 'none',
+						description: 'No authentication required',
+					},
+					{
+						name: 'Basic Auth',
+						value: 'basic',
+						description: 'Require username and password',
+					},
+				],
+				default: 'none',
+				description: 'How to restrict access to the chat',
+				displayOptions: {
+					show: {
+						chatMode: ['hosted', 'embedded'],
+					},
+				},
+			},
+			{
+				displayName: 'Username',
+				name: 'authUsername',
+				type: 'string',
+				default: '',
+				description: 'Username for Basic Authentication',
+				displayOptions: {
+					show: {
+						authentication: ['basic'],
+					},
+				},
+			},
+			{
+				displayName: 'Password',
+				name: 'authPassword',
+				type: 'string',
+				typeOptions: {
+					password: true,
+				},
+				default: '',
+				description: 'Password for Basic Authentication',
+				displayOptions: {
+					show: {
+						authentication: ['basic'],
+					},
+				},
+			},
+			{
+				displayName: 'Allowed Origins (CORS)',
+				name: 'allowedOrigins',
+				type: 'string',
+				default: '*',
+				description: 'Comma-separated list of allowed origins for cross-origin requests. Use * to allow all.',
+				displayOptions: {
+					show: {
+						chatMode: ['hosted', 'embedded'],
+					},
+				},
+			},
+			{
+				displayName: 'Initial Message',
+				name: 'initialMessage',
+				type: 'string',
+				default: 'Hi! How can I help you today?',
+				description: 'Welcome message shown when chat loads',
+				displayOptions: {
+					show: {
+						chatMode: ['hosted'],
+					},
+				},
 			},
 			{
 				displayName: 'Display Mode',
@@ -182,16 +293,243 @@ export class MinimalWebhook implements INodeType {
 	};
 
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-		const bodyData = this.getBodyData() as any;
+		const req = this.getRequestObject();
 		const headers = this.getHeaderData();
 		const query = this.getQueryData();
+		const method = req.method;
 		
 		// Get node parameters
+		const chatMode = this.getNodeParameter('chatMode') as string;
 		const displayMode = this.getNodeParameter('displayMode') as string;
 		const outputFormat = this.getNodeParameter('outputFormat') as string;
 		const webhookPath = this.getNodeParameter('webhookPath') as string;
 		const features = this.getNodeParameter('features') as string[];
 		const uiSettings = this.getNodeParameter('uiSettings') as object;
+		
+		// Get hosted/embedded mode parameters
+		const publicAvailable = chatMode === 'hosted' ? this.getNodeParameter('publicAvailable', false) as boolean : false;
+		const authentication = ['hosted', 'embedded'].includes(chatMode) ? 
+			this.getNodeParameter('authentication', 'none') as string : 'none';
+		const allowedOrigins = ['hosted', 'embedded'].includes(chatMode) ? 
+			this.getNodeParameter('allowedOrigins', '*') as string : '*';
+		const initialMessage = chatMode === 'hosted' ? 
+			this.getNodeParameter('initialMessage', 'Hi! How can I help you today?') as string : '';
+		
+		// Handle GET request for hosted chat interface
+		if (method === 'GET' && chatMode === 'hosted') {
+			// Generate chat interface HTML
+			const chatHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Chat Interface</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body { 
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+			margin: 0; 
+			padding: 20px;
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			height: 100vh;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+		.chat-container {
+			background: white;
+			border-radius: 10px;
+			box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+			width: 100%;
+			max-width: 600px;
+			height: 600px;
+			display: flex;
+			flex-direction: column;
+		}
+		.chat-header {
+			padding: 20px;
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			color: white;
+			border-radius: 10px 10px 0 0;
+		}
+		.chat-messages {
+			flex: 1;
+			padding: 20px;
+			overflow-y: auto;
+		}
+		.message {
+			margin-bottom: 15px;
+			padding: 10px 15px;
+			border-radius: 10px;
+		}
+		.message.user {
+			background: #e3f2fd;
+			margin-left: 20%;
+			text-align: right;
+		}
+		.message.assistant {
+			background: #f3e5f5;
+			margin-right: 20%;
+		}
+		.chat-input {
+			display: flex;
+			padding: 20px;
+			border-top: 1px solid #e0e0e0;
+		}
+		.chat-input input {
+			flex: 1;
+			padding: 10px 15px;
+			border: 1px solid #ddd;
+			border-radius: 25px;
+			font-size: 16px;
+		}
+		.chat-input button {
+			margin-left: 10px;
+			padding: 10px 20px;
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			color: white;
+			border: none;
+			border-radius: 25px;
+			cursor: pointer;
+			font-size: 16px;
+		}
+		.chat-input button:hover {
+			opacity: 0.9;
+		}
+	</style>
+</head>
+<body>
+	<div class="chat-container">
+		<div class="chat-header">
+			<h2 style="margin: 0;">Chat Assistant</h2>
+			<p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px;">${publicAvailable ? 'Public Chat' : 'Test Mode'}</p>
+		</div>
+		<div class="chat-messages" id="messages">
+			<div class="message assistant">
+				<p>${initialMessage}</p>
+			</div>
+		</div>
+		<div class="chat-input">
+			<input type="text" id="messageInput" placeholder="Type your message..." autofocus>
+			<button onclick="sendMessage()">Send</button>
+		</div>
+	</div>
+	<script>
+		const webhookUrl = window.location.href;
+		const messages = [];
+		
+		function sendMessage() {
+			const input = document.getElementById('messageInput');
+			const message = input.value.trim();
+			if (!message) return;
+			
+			// Add user message to UI
+			addMessage('user', message);
+			messages.push({ role: 'user', content: message });
+			
+			// Clear input
+			input.value = '';
+			
+			// Send to webhook
+			fetch(webhookUrl, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					message: message,
+					messages: messages
+				})
+			})
+			.then(response => response.json())
+			.then(data => {
+				// Add assistant response
+				const response = data.response || data.output || data.text || 'Processing...';
+				addMessage('assistant', response);
+				messages.push({ role: 'assistant', content: response });
+			})
+			.catch(error => {
+				console.error('Error:', error);
+				addMessage('assistant', 'Sorry, there was an error processing your message.');
+			});
+		}
+		
+		function addMessage(role, content) {
+			const messagesDiv = document.getElementById('messages');
+			const messageDiv = document.createElement('div');
+			messageDiv.className = 'message ' + role;
+			messageDiv.innerHTML = '<p>' + content + '</p>';
+			messagesDiv.appendChild(messageDiv);
+			messagesDiv.scrollTop = messagesDiv.scrollHeight;
+		}
+		
+		document.getElementById('messageInput').addEventListener('keypress', function(e) {
+			if (e.key === 'Enter') {
+				sendMessage();
+			}
+		});
+	</script>
+</body>
+</html>`;
+			
+			return {
+				webhookResponse: {
+					headers: {
+						'Content-Type': 'text/html',
+					},
+					body: chatHtml,
+				},
+			};
+		}
+		
+		// For POST requests, get body data
+		const bodyData = method === 'POST' ? this.getBodyData() as any : {};
+		
+		// Handle authentication
+		if (authentication === 'basic') {
+			const authUsername = this.getNodeParameter('authUsername', '') as string;
+			const authPassword = this.getNodeParameter('authPassword', '') as string;
+			
+			// Check Basic Auth header
+			const authHeader = headers.authorization || '';
+			if (!authHeader.startsWith('Basic ')) {
+				return {
+					webhookResponse: {
+						status: 401,
+						headers: {
+							'WWW-Authenticate': 'Basic realm="Chat Access"',
+						},
+						body: 'Authentication required',
+					},
+				};
+			}
+			
+			// Validate credentials
+			const credentials = Buffer.from(authHeader.slice(6), 'base64').toString();
+			const [user, pass] = credentials.split(':');
+			if (user !== authUsername || pass !== authPassword) {
+				return {
+					webhookResponse: {
+						status: 403,
+						body: 'Invalid credentials',
+					},
+				};
+			}
+		}
+		
+		// Handle CORS
+		const origin = headers.origin || '';
+		if (allowedOrigins !== '*' && origin) {
+			const allowedList = allowedOrigins.split(',').map(o => o.trim());
+			if (!allowedList.includes(origin)) {
+				return {
+					webhookResponse: {
+						status: 403,
+						body: 'Origin not allowed',
+					},
+				};
+			}
+		}
 		
 		// Process incoming message
 		const userMessage = bodyData.message || bodyData.text || bodyData.content || '';
@@ -219,6 +557,30 @@ export class MinimalWebhook implements INodeType {
 		// Process messages with enabled features
 		const processedMessages = processMessages(messages, features);
 		
+		// Generate chat URL for hosted mode
+		let chatUrl = '';
+		if (chatMode === 'hosted') {
+			try {
+				// Get workflow ID and instance URL
+				const workflowId = this.getWorkflow().id;
+				const webhookUrl = this.getNodeWebhookUrl('default') as string;
+				
+				// Parse instance URL from webhook URL
+				const urlParts = new URL(webhookUrl);
+				const baseUrl = `${urlParts.protocol}//${urlParts.host}`;
+				
+				// Generate chat URL
+				if (publicAvailable) {
+					chatUrl = `${baseUrl}/chat/${workflowId}`;
+				} else {
+					chatUrl = `${baseUrl}/chat/${workflowId}/test`;
+				}
+			} catch (error) {
+				// Fallback if URL generation fails
+				chatUrl = 'Chat URL will be available when workflow is saved';
+			}
+		}
+		
 		// Build output based on selected format
 		let output: any;
 		
@@ -232,6 +594,11 @@ export class MinimalWebhook implements INodeType {
 				messageCount: messages.length,
 				timestamp: new Date().toISOString(),
 			};
+			
+			// Add chat URL if in hosted mode
+			if (chatUrl) {
+				output.chatUrl = chatUrl;
+			}
 		} else {
 			// Detailed output with all metadata
 			output = {
@@ -243,6 +610,14 @@ export class MinimalWebhook implements INodeType {
 				userMessage,
 				sessionId,
 				threadId,
+				
+				// Chat configuration
+				chatMode,
+				chatUrl: chatUrl || undefined,
+				publicAvailable: chatMode === 'hosted' ? publicAvailable : undefined,
+				authentication: ['hosted', 'embedded'].includes(chatMode) ? authentication : undefined,
+				allowedOrigins: ['hosted', 'embedded'].includes(chatMode) ? allowedOrigins : undefined,
+				initialMessage: chatMode === 'hosted' ? initialMessage : undefined,
 				
 				// UI Configuration
 				displayMode,
