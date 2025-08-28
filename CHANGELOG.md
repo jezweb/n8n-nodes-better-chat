@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2025-01-28
+
+### Changed
+- **BREAKING**: Complete architectural redesign from transform to webhook trigger node
+- Replaced IExecuteFunctions with IWebhookFunctions for proper webhook handling
+- Removed inputs array (triggers don't have inputs)
+- Replaced execute() method with webhook() method
+- Removed message input field (data now comes from webhook)
+- Data flow now initiates from external webhook POST requests
+
+### Added
+- Webhook infrastructure with configurable path parameter
+- Webhook data processing (body, headers, query parameters)
+- Support for multiple message field names (message, text, content)
+- Webhook source tracking in message metadata
+
+### Fixed
+- **CRITICAL**: Resolved "package could not be loaded" error
+- Node now implements proper trigger node infrastructure that n8n expects
+- Correct webhook trigger architecture enables proper loading in n8n
+
 ## [0.1.3] - 2025-01-28
 
 ### Fixed

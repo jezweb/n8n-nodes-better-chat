@@ -1,7 +1,7 @@
 # n8n Better Chat Node - Architecture
 
 ## Overview
-The n8n Better Chat Node is a presentation-layer node that provides a sophisticated chat user interface for n8n workflows. It follows n8n's architectural principles by focusing solely on UI concerns while delegating AI logic and memory management to appropriate specialized nodes.
+The n8n Better Chat Node is a webhook trigger node that provides a sophisticated chat interface for n8n workflows. It receives chat messages via webhook, processes them with rich features, and initiates workflows for AI agent processing.
 
 ## Design Principles
 
@@ -15,10 +15,16 @@ The n8n Better Chat Node is a presentation-layer node that provides a sophistica
 
 ```
 ┌─────────────────────┐
-│   User Interface    │
-│  (Better Chat UI)   │
+│   Chat Interface    │
+│     (External)      │
 └──────────┬──────────┘
-           │ Format & Pass
+           │ Webhook POST
+           ↓
+┌─────────────────────┐
+│  Better Chat UI     │ ← Webhook Trigger Node
+│  (Process & Format) │
+└──────────┬──────────┘
+           │ Formatted Message
            ↓
 ┌─────────────────────┐
 │     AI Agent        │ ← Connected to Memory Node
@@ -27,8 +33,7 @@ The n8n Better Chat Node is a presentation-layer node that provides a sophistica
            │ Response
            ↓
 ┌─────────────────────┐
-│   User Interface    │
-│  (Display Result)   │
+│   Workflow Output   │
 └─────────────────────┘
 ```
 
@@ -37,14 +42,15 @@ The n8n Better Chat Node is a presentation-layer node that provides a sophistica
 ### Core Node: BetterChatUI
 
 #### Purpose
-Provide a rich, interactive chat interface for n8n workflows that enhances user experience without managing state or AI logic.
+Provide a webhook-based chat trigger for n8n workflows that receives messages from external chat interfaces and processes them with rich features.
 
 #### Responsibilities
-- Render messages with Markdown and code highlighting
-- Handle user input and file uploads
+- Receive chat messages via webhook
+- Process messages with Markdown and code highlighting flags
+- Handle file uploads
 - Format messages for AI Agent consumption
-- Display AI responses attractively
-- Provide UI actions (copy, regenerate, pin, export)
+- Add message metadata and threading
+- Provide UI feature configuration (copy, regenerate, pin, export)
 
 #### Non-Responsibilities
 - Does NOT store conversation history
@@ -122,8 +128,12 @@ Analysis of working n8n community nodes revealed that they specify `"main": "ind
 
 Previous versions (0.1.0-0.1.2) incorrectly included root `index.js` and `index.ts` files that caused loading conflicts.
 
-### Node Group Classification
-Changed from `'transform'` to `'trigger'` group as the Better Chat UI is an interactive interface node rather than a data transformation node. This better reflects its purpose as a user interface trigger.
+### Node Type: Webhook Trigger
+The node is implemented as a webhook trigger (`group: ['trigger']`) with:
+- No inputs (triggers don't have inputs)
+- One output for workflow data
+- Webhook configuration for receiving external messages
+- `webhook()` method instead of `execute()` method
 
 ## Integration Patterns
 

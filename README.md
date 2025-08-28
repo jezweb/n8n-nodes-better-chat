@@ -2,7 +2,7 @@
 
 [![npm version](https://badge.fury.io/js/n8n-nodes-better-chat.svg)](https://www.npmjs.com/package/n8n-nodes-better-chat)
 
-A sophisticated chat UI node for n8n workflows that provides rich text rendering, file handling, and advanced conversation features while respecting n8n's architectural patterns.
+A webhook-based chat trigger node for n8n workflows that provides rich text rendering, file handling, and advanced conversation features. This node receives chat messages via webhook and initiates workflows with rich formatting capabilities.
 
 ## Features
 
@@ -64,33 +64,34 @@ n8n start
 
 ### Basic Setup
 
-1. **Add the Node**: Drag the "Better Chat UI" node from the nodes panel
-2. **Configure Display Mode**:
+1. **Add the Node**: Drag the "Better Chat UI" node from the trigger nodes panel
+2. **Configure Webhook Path**: Set the path for receiving chat messages (default: `chat`)
+3. **Configure Display Mode**:
    - `Simple`: Basic chat interface
    - `Rich`: Markdown and code highlighting enabled
    - `Advanced`: All features including threading and folders
-
-3. **Connect to AI Agent**: Link the output to an AI Agent node
+4. **Connect to AI Agent**: Link the output to an AI Agent node
+5. **Get Webhook URL**: Copy the webhook URL from the node to use in your chat interface
 
 ### Example Workflows
 
 #### Simple Chat with OpenAI
 ```
-[Better Chat UI] → [OpenAI Chat Model] → [Response]
+[Better Chat UI Webhook] → [OpenAI Chat Model] → [Respond to Webhook]
 ```
 
 #### Chat with Memory
 ```
-[Better Chat UI] → [AI Agent] ← [Window Buffer Memory]
-        ↑              ↓
-        └──────────────┘
+[Better Chat UI Webhook] → [AI Agent] ← [Window Buffer Memory]
+                               ↓
+                        [Respond to Webhook]
 ```
 
 #### Advanced Setup with Tools
 ```
-[Webhook Trigger] → [Better Chat UI] → [AI Agent] → [Tool Nodes]
-                            ↑              ↓            ↓
-                            └──────────────┴────────────┘
+[Better Chat UI Webhook] → [AI Agent] → [Tool Nodes]
+                               ↓            ↓
+                        [Respond to Webhook]
 ```
 
 ## Configuration Options
@@ -128,9 +129,9 @@ n8n start
 
 | Property | Type | Description | Default |
 |----------|------|-------------|---------|
+| webhookPath | string | Path for webhook endpoint | chat |
 | displayMode | options | Interface complexity level | rich |
 | features | multiOptions | Enabled features | markdown, codeHighlight, copy, timestamps |
-| message | string | User message input | - |
 | systemPrompt | string | Override AI system prompt | - |
 | threadOptions | collection | Thread management settings | - |
 | uiSettings | collection | Interface customization | - |
@@ -166,6 +167,52 @@ The node outputs a structured object that AI Agents can process:
     folder: string
   }
 }
+```
+
+## Webhook Integration
+
+### Sending Messages to the Webhook
+
+The node expects a POST request with the following structure:
+
+```javascript
+// Basic message
+{
+  "message": "Hello, how can you help me?",
+  "thread_id": "optional-thread-id",
+  "session_id": "optional-session-id"
+}
+
+// With previous messages
+{
+  "message": "What about this?",
+  "messages": [
+    { "role": "user", "content": "Previous question" },
+    { "role": "assistant", "content": "Previous answer" }
+  ]
+}
+
+// With files
+{
+  "message": "Check this document",
+  "files": [
+    { "name": "document.pdf", "type": "application/pdf", "data": "base64..." }
+  ]
+}
+```
+
+### Webhook URLs
+
+n8n provides two webhook URLs:
+- **Test URL**: Use while building workflows (includes test listener)
+- **Production URL**: Use when workflow is active
+
+### Example curl Request
+
+```bash
+curl -X POST https://your-n8n.com/webhook/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Hello from curl!"}'
 ```
 
 ## Best Practices
