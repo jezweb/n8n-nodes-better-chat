@@ -3,6 +3,13 @@
 ## Project Context
 This is the n8n Better Chat Node - a sophisticated chat UI node for n8n workflows that provides rich text rendering, file handling, and advanced conversation features while respecting n8n's architectural patterns.
 
+## Version 0.3.0 - Major Update
+The project now includes two nodes:
+1. **BetterChatTrigger** - NEW node that is fully compatible with n8n's Respond to Webhook node
+2. **MinimalWebhook** - Legacy node for backward compatibility
+
+The BetterChatTrigger follows the official n8n Chat Trigger pattern exactly while preserving all our custom UI enhancements.
+
 ## Key Design Principles
 1. **Separation of Concerns**: This node handles ONLY the presentation layer. AI logic and memory management are handled by other specialized nodes.
 2. **No State Management**: The node does not persist any data. It formats and passes data between the user and AI Agent nodes.
@@ -38,15 +45,17 @@ This is the n8n Better Chat Node - a sophisticated chat UI node for n8n workflow
 
 ## Important Files
 
-### Core Implementation
-- `nodes/BetterChatUI/BetterChatUI.node.ts` - Main node implementation
-- `nodes/BetterChatUI/BetterChatUI.node.json` - Node metadata
-- `nodes/BetterChatUI/BetterChatUI.icon.svg` - Node icon
+### Core Implementation (v0.3.0+)
+- `nodes/BetterChatTrigger/BetterChatTrigger.node.ts` - NEW Respond to Webhook compatible node
+- `nodes/BetterChatTrigger/betterChatTrigger.svg` - BetterChatTrigger icon
+- `nodes/MinimalWebhook/MinimalWebhook.node.ts` - Legacy node (backward compatibility)
+- `nodes/MinimalWebhook/webhook.svg` - MinimalWebhook icon
 
 ### Documentation
-- `README.md` - User-facing documentation
-- `ARCHITECTURE.md` - Technical architecture details
+- `README.md` - User-facing documentation with migration guide
+- `ARCHITECTURE.md` - Technical architecture details (updated for v0.3.0)
 - `CHANGELOG.md` - Version history
+- `DEPLOYMENT.md` - Deployment and migration instructions
 - `scratchpad.md` - Development notes and planning
 
 ## Common Tasks
@@ -78,19 +87,23 @@ git push --tags
 
 ## Integration Patterns
 
-### Simple Chat
+### Simple Chat with Respond to Webhook (v0.3.0+)
 ```
-[Better Chat UI] → [AI Agent] → [Response]
+[Better Chat Trigger] → [AI Agent] → [Respond to Webhook]
 ```
 
 ### Chat with Memory
 ```
-[Better Chat UI] → [AI Agent] ← [Memory Node]
+[Better Chat Trigger] → [AI Agent] ← [Memory Node]
+                              ↓
+                    [Respond to Webhook]
 ```
 
 ### Chat with Tools
 ```
-[Better Chat UI] → [AI Agent] → [Tool Nodes]
+[Better Chat Trigger] → [AI Agent] → [Tool Nodes]
+                              ↓
+                    [Respond to Webhook]
 ```
 
 ## Current Focus Areas
@@ -104,6 +117,7 @@ git push --tags
 - No built-in persistence (by design)
 - Relies on AI Agent for logic
 - File size limits for base64 encoding
+- BetterChatTrigger requires n8n version that supports dynamic webhook response modes
 
 ## Future Enhancements
 - Streaming response support
@@ -117,3 +131,7 @@ git push --tags
 - All descriptions should be clear and helpful for both humans and AI agents
 - The node should work with any AI Agent setup, not just specific ones
 - Performance is important - avoid unnecessary re-renders and computations
+- BetterChatTrigger follows the official n8n Chat Trigger pattern for compatibility
+- When working on this project, understand the difference between the two nodes:
+  - BetterChatTrigger: NEW, Respond to Webhook compatible, recommended for new workflows
+  - MinimalWebhook: Legacy, kept for backward compatibility

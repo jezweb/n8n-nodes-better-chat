@@ -1,12 +1,23 @@
 # n8n Better Chat Node - Architecture
 
 ## Overview
-The n8n Better Chat Node is a webhook trigger node that provides a sophisticated chat interface for n8n workflows. It receives chat messages via webhook, processes them with rich features, and initiates workflows for AI agent processing.
+The n8n Better Chat Node provides two webhook trigger nodes for sophisticated chat interfaces in n8n workflows. Version 0.3.0 introduces BetterChatTrigger, which is fully compatible with n8n's Respond to Webhook node while maintaining all custom UI enhancements.
+
+## Version 0.3.0 - Major Architecture Update
+
+### Key Architectural Change
+The project now includes two nodes:
+1. **MinimalWebhook** - Original implementation (backward compatibility)
+2. **BetterChatTrigger** - New node based on official Chat Trigger pattern (Respond to Webhook compatible)
+
+### Why Two Nodes?
+- **MinimalWebhook**: Preserves backward compatibility for existing workflows
+- **BetterChatTrigger**: Follows n8n's official patterns for guaranteed compatibility with Respond to Webhook node
 
 ## Design Principles
 
 ### 1. Separation of Concerns
-- **Presentation**: Better Chat UI Node handles display and user interaction
+- **Presentation**: Better Chat nodes handle display and user interaction
 - **Logic**: AI Agent nodes handle reasoning and decision-making
 - **Memory**: Memory nodes handle conversation persistence
 - **Tools**: Tool nodes handle external actions
@@ -16,13 +27,13 @@ The n8n Better Chat Node is a webhook trigger node that provides a sophisticated
 ```
 ┌─────────────────────┐
 │   Chat Interface    │
-│     (External)      │
+│  (Hosted/External)  │
 └──────────┬──────────┘
            │ Webhook POST
            ↓
 ┌─────────────────────┐
-│  Better Chat UI     │ ← Webhook Trigger Node
-│  (Process & Format) │
+│  BetterChatTrigger  │ ← Webhook Trigger Node (v0.3.0+)
+│  (Process & Format) │ ← Compatible with Respond to Webhook
 └──────────┬──────────┘
            │ Formatted Message
            ↓
@@ -33,16 +44,32 @@ The n8n Better Chat Node is a webhook trigger node that provides a sophisticated
            │ Response
            ↓
 ┌─────────────────────┐
-│   Workflow Output   │
+│ Respond to Webhook  │ ← Sends response back to chat
 └─────────────────────┘
 ```
 
 ## Component Structure
 
-### Core Node: MinimalWebhook (Chat UI Trigger)
+### Core Nodes
 
-#### Purpose
-Provide a webhook-based chat trigger for n8n workflows that receives messages from external chat interfaces, offers hosted chat UI, and processes messages with rich features.
+#### BetterChatTrigger (v0.3.0+)
+
+##### Purpose
+Fully compatible replacement for n8n's Chat Trigger with enhanced UI features. Based on the official Chat Trigger architecture to ensure compatibility with Respond to Webhook node.
+
+##### Key Features
+- **Respond to Webhook Compatible**: Recognized by n8n's response system
+- **Official Pattern**: Follows n8n's Chat Trigger implementation exactly
+- **Enhanced UI**: All custom features preserved (themes, markdown, timestamps, etc.)
+- **Backward Compatible**: Works with existing AI Agent setups
+
+##### Technical Details
+- Node Type: `n8n-nodes-better-chat.betterChatTrigger`
+- Based on: `@n8n/n8n-nodes-langchain.chatTrigger`
+- Response Modes: 'lastNode', 'responseNode', 'responseNodes', 'streaming'
+- Uses CHAT_TRIGGER_PATH_IDENTIFIER for webhook paths
+
+#### MinimalWebhook (Legacy)
 
 #### Responsibilities
 - Receive chat messages via webhook (POST)
@@ -127,31 +154,49 @@ The node follows n8n community node patterns discovered from working examples:
 ```
 n8n-nodes-better-chat/
 ├── nodes/
-│   └── MinimalWebhook/
-│       ├── MinimalWebhook.node.ts  # Main node implementation
-│       └── webhook.svg              # Node icon
-├── dist/                           # Compiled output (auto-generated)
-│   └── nodes/MinimalWebhook/
-│       ├── MinimalWebhook.node.js  # Compiled node (referenced in package.json)
-│       ├── MinimalWebhook.node.d.ts # Type definitions
-│       └── webhook.svg              # Copied icon
-├── package.json                    # Package configuration (main: "index.js" but NO actual file)
-├── tsconfig.json                   # TypeScript configuration
-├── gulpfile.js                     # Build automation (copies JS to dist/nodes/)
-└── README.md                       # Documentation
+│   ├── MinimalWebhook/              # Legacy node (backward compatibility)
+│   │   ├── MinimalWebhook.node.ts   # Original implementation
+│   │   └── webhook.svg              # Node icon
+│   └── BetterChatTrigger/           # NEW v0.3.0 node
+│       ├── BetterChatTrigger.node.ts # Official pattern implementation
+│       └── betterChatTrigger.svg    # Node icon
+├── dist/                            # Compiled output (auto-generated)
+│   └── nodes/
+│       ├── MinimalWebhook/
+│       │   ├── MinimalWebhook.node.js
+│       │   ├── MinimalWebhook.node.d.ts
+│       │   └── webhook.svg
+│       └── BetterChatTrigger/
+│           ├── BetterChatTrigger.node.js  # Referenced in package.json
+│           ├── BetterChatTrigger.node.d.ts
+│           └── betterChatTrigger.svg
+├── package.json                     # Package configuration (v0.3.0)
+├── tsconfig.json                    # TypeScript configuration
+├── gulpfile.js                      # Build automation (copies JS to dist/nodes/)
+└── README.md                        # Documentation with migration guide
 ```
 
-### Critical Discovery: No Root Index Files
+### Critical Discoveries
+
+#### 1. No Root Index Files
 Analysis of working n8n community nodes revealed that they specify `"main": "index.js"` in package.json but **do not include actual root index files**. n8n ignores the main field and only uses the paths specified in the `n8n.nodes` array.
 
-Previous versions (0.1.0-0.1.2) incorrectly included root `index.js` and `index.ts` files that caused loading conflicts.
+#### 2. Respond to Webhook Compatibility (v0.3.0)
+The Respond to Webhook node only recognizes specific hardcoded node types:
+- `n8n-nodes-base.webhook`
+- `n8n-nodes-base.formTrigger`
+- `@n8n/n8n-nodes-langchain.chatTrigger`
+- `n8n-nodes-base.wait`
+
+Our original `n8n-nodes-better-chat.minimalWebhook` was not recognized, leading to the v0.3.0 redesign.
 
 ### Node Type: Webhook Trigger
-The node is implemented as a webhook trigger (`group: ['trigger']`) with:
+Both nodes are implemented as webhook triggers (`group: ['trigger']`) with:
 - No inputs (triggers don't have inputs)
 - One output for workflow data
 - Webhook configuration for receiving external messages
 - `webhook()` method instead of `execute()` method
+- Dynamic response mode configuration for BetterChatTrigger
 
 ## Chat Access Modes (v0.2.0+)
 

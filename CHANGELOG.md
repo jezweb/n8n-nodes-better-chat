@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-08-29
+
+### Added
+- **NEW NODE**: BetterChatTrigger - Fully compatible with Respond to Webhook node
+- Cloned from official n8n Chat Trigger for guaranteed compatibility
+- All custom UI enhancement features preserved
+- Rich theme support (light/dark/auto)
+- Markdown rendering and code highlighting
+- Message timestamps and copy functionality
+- Compact mode for dense interfaces
+- Customizable max height
+
+### Changed
+- Major version bump due to significant architectural change
+- New node type that n8n's Respond to Webhook recognizes
+- Improved webhook configuration matching official patterns
+- Enhanced HTML chat interface with better styling
+
+### Technical
+- Node type: `n8n-nodes-better-chat.betterChatTrigger`
+- Follows n8n's official Chat Trigger patterns exactly
+- Compatible with all response modes (lastNode, responseNode)
+- Maintains backward compatibility with MinimalWebhook node
+
+### Migration Guide
+- Existing workflows using MinimalWebhook will continue to work
+- For Respond to Webhook compatibility, switch to BetterChatTrigger node
+- All features and settings are preserved in the new node
+
 ## [0.2.5] - 2025-08-29
 
 ### Fixed

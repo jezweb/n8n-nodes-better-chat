@@ -5,6 +5,15 @@
 
 A feature-rich chat trigger node for n8n workflows with multiple access modes including hosted chat interface, webhook endpoint, and embedded widget support. Provides native AI Agent integration, authentication, CORS configuration, and advanced UI features.
 
+## 🎉 Version 0.3.0 - Major Update!
+
+**NEW: BetterChatTrigger Node** - Fully compatible with n8n's Respond to Webhook node! Based on the official n8n Chat Trigger architecture, this new node provides all our enhanced features while maintaining complete compatibility with n8n's response system.
+
+### Migration Guide
+- **Existing users**: Your MinimalWebhook node workflows will continue to work
+- **For Respond to Webhook compatibility**: Use the new BetterChatTrigger node
+- **All features preserved**: Every enhancement is available in the new node
+
 ## Features
 
 ### 🚀 Chat Access Modes (New in v0.2.0!)

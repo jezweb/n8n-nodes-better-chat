@@ -1,5 +1,9 @@
 # n8n Better Chat Node - Deployment Guide
 
+## Version 0.3.0 - Major Update
+
+**IMPORTANT**: Version 0.3.0 introduces the new BetterChatTrigger node that is fully compatible with n8n's Respond to Webhook node. Existing workflows using MinimalWebhook will continue to work.
+
 ## Prerequisites
 
 - Node.js >= 20.15
@@ -17,14 +21,15 @@
 3. Enter: `n8n-nodes-better-chat`
 4. Click **Install**
 5. Restart n8n if prompted
+6. **NEW**: Look for "Better Chat Trigger" in the nodes panel (v0.3.0+)
 
 #### For Self-Hosted via Command Line
 ```bash
 # Navigate to your n8n installation
 cd /path/to/n8n
 
-# Install the node package
-npm install n8n-nodes-better-chat
+# Install the node package (v0.3.0 or later)
+npm install n8n-nodes-better-chat@latest
 
 # Restart n8n
 n8n start
@@ -138,23 +143,36 @@ spec:
 
 1. Open n8n workflow editor
 2. Search for "Better Chat" in the nodes panel
-3. The node should appear with its icon
-4. Drag it to the canvas to verify it loads properly
+3. **v0.3.0+**: Two nodes should appear:
+   - "Better Chat Trigger" (NEW - Respond to Webhook compatible)
+   - "Chat UI Trigger" (Legacy MinimalWebhook)
+4. Drag the Better Chat Trigger to the canvas to verify it loads properly
 
 ### Test Basic Functionality
 
-Create a test workflow:
+Create a test workflow with Respond to Webhook (v0.3.0+):
 
 ```json
 {
   "nodes": [
     {
-      "name": "Better Chat UI",
-      "type": "n8n-nodes-better-chat.BetterChatUI",
+      "name": "Better Chat Trigger",
+      "type": "n8n-nodes-better-chat.betterChatTrigger",
       "position": [250, 300],
       "parameters": {
-        "displayMode": "rich",
-        "features": ["markdown", "codeHighlight", "copy"]
+        "public": true,
+        "options": {
+          "responseMode": "responseNode"
+        }
+      }
+    },
+    {
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [550, 300],
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Chat received!"
       }
     }
   ]
@@ -309,15 +327,30 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
 
 ## Version Compatibility
 
-| Better Chat Version | n8n Version | Node.js Version |
-|-------------------|-------------|-----------------|
-| 0.1.x            | >= 1.0.0    | >= 20.15        |
+| Better Chat Version | n8n Version | Node.js Version | Notes |
+|-------------------|-------------|-----------------|--------|
+| 0.3.x            | >= 1.0.0    | >= 20.15        | BetterChatTrigger (Respond to Webhook compatible) |
+| 0.2.x            | >= 1.0.0    | >= 20.15        | MinimalWebhook with hosted chat |
+| 0.1.x            | >= 1.0.0    | >= 20.15        | Initial release |
 
 ## Migration Guide
 
-### From Standard Chat Trigger
+### From v0.2.x to v0.3.0
+
+**For existing workflows using MinimalWebhook:**
+- No action required - your workflows will continue to work
+- The node will still appear as "Chat UI Trigger" in your workflows
+
+**To use Respond to Webhook compatibility:**
+1. Add the new "Better Chat Trigger" node to your workflow
+2. Copy settings from your old MinimalWebhook node
+3. Connect to "Respond to Webhook" node
+4. Test the workflow
+5. Remove the old node once verified
+
+### From Standard n8n Chat Trigger
 
 1. Export your existing workflow
-2. Replace chat trigger nodes with Better Chat UI
-3. Update connections to AI Agent nodes
-4. Test thoroughly before deploying to production
+2. Replace chat trigger nodes with Better Chat Trigger (v0.3.0+)
+3. All connections and settings remain compatible
+4. Enjoy enhanced UI features while maintaining full compatibility
