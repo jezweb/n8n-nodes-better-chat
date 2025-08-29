@@ -1127,9 +1127,14 @@ export class BetterChatTrigger implements INodeType {
 					timestamp: new Date().toISOString(),
 				};
 				
-				// Add files if present
+				// Don't include file data in JSON output - it's in binary format
+				// This prevents template parsing issues in AI Agent
+				// Files are available via the binary data property instead
 				if (files.length > 0) {
-					output.files = files;
+					output.hasFiles = true;
+					output.fileCount = files.length;
+					// File names only, no data
+					output.fileNames = files.map((f: any) => f.name);
 				}
 				
 				// Always add chat URL for hosted mode - make it prominent
@@ -1145,7 +1150,7 @@ export class BetterChatTrigger implements INodeType {
 					userMessage,
 					sessionId,
 					threadId,
-					files: files.length > 0 ? files : undefined,
+					// files: files.length > 0 ? files : undefined, // Files are in binary data, not JSON
 					chatMode: mode,
 					chatUrl: chatUrl || undefined,
 					publicAvailable,
@@ -1183,8 +1188,16 @@ export class BetterChatTrigger implements INodeType {
 				files.forEach((file: any, index: number) => {
 					const binaryPropertyName = `data${index}`;
 					
+					// Extract base64 from data URL (format: data:image/png;base64,iVBORw0KGgo...)
+					let base64Data = file.data;
+					if (file.data.startsWith('data:')) {
+						// Split on comma to get pure base64 after the data URL prefix
+						const parts = file.data.split(',');
+						base64Data = parts[1] || file.data;
+					}
+					
 					// Convert base64 to Buffer
-					const buffer = Buffer.from(file.data, 'base64');
+					const buffer = Buffer.from(base64Data, 'base64');
 					
 					// Add to binary object in n8n standard format
 					binary[binaryPropertyName] = {
