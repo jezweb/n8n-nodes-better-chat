@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.25] - 2025-08-29
+
+### Fixed
+- **CRITICAL**: Reverted to monolithic structure to fix module loading errors
+- Fixed "Cannot find module './constants/defaults'" error in n8n
+- Removed unused nodes (BetterChatUI, BetterChatSimple) from package
+
+### Changed
+- Rolled back modularization that broke n8n's node loading mechanism
+- Consolidated all code back into single BetterChatTrigger.node.ts file
+- Cleaned up project structure to only include active nodes
+
+### Technical
+- n8n requires node files to be self-contained in dist/nodes/ directory
+- Modular imports don't work with n8n's dynamic loading system
+- Package now only registers MinimalWebhook and BetterChatTrigger nodes
+
+## [0.3.24] - 2025-08-29
+
+### Fixed
+- Emergency rollback to fix broken npm package
+- Restored working monolithic structure from v0.3.22
+
+## [0.3.23] - 2025-08-29
+
+### Changed
+- Attempted modularization (broke n8n compatibility - DO NOT USE)
+
 ## [0.3.5] - 2025-08-29
 
 ### Added

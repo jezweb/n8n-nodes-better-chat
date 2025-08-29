@@ -1,52 +1,36 @@
-# n8n Better Chat Node - Feature Enhancement Scratchpad
+# n8n Better Chat Node - Development Notes
 
 ## Current Status
-- Version: 0.3.5
-- BetterChatTrigger node working with "When Last Node Finishes" mode
-- All UI features implemented (colors, file upload, copy, syntax highlighting)
+- Version: 0.3.25 (Stable Release)
+- Architecture: Monolithic (required for n8n compatibility)
+- BetterChatTrigger node working with all features
+- MinimalWebhook node for backward compatibility
 
-## Feature Implementation Plan (2025-08-29)
+## Modularization Attempt (v0.3.23) - Failed
+- ❌ Attempted to split BetterChatTrigger into modules
+- ❌ Created constants/, types/, utils/ folders
+- ❌ n8n couldn't load the modular structure
+- ✅ Learned: n8n requires self-contained node files
 
-### Features Analysis
+## Rollback Success (v0.3.24-25)
+- ✅ Reverted to monolithic structure
+- ✅ All code in single file per node
+- ✅ Fixed module loading errors
+- ✅ Removed unused nodes
+- ✅ Published working version
 
-#### Currently Working:
-- Basic chat interface
-- Message sending/receiving
-- Theme support (dark/light/auto)
-- Compact mode
-- Markdown rendering (basic)
-- Timestamps
-- Max height setting
-
-#### Missing Features to Implement:
-1. **File Upload** - Config exists but no UI
-2. **Copy Button** - For individual messages
-3. **Syntax Highlighting** - Proper code highlighting
-4. **Color Customization** - User-defined colors
-5. **Width Control** - Adjustable chat width
-6. **Font Size Control** - Adjustable text size
-
-## Implementation Plan v0.3.5
-
-### Phase 1: Add Configuration Options
-1. Add color customization options to node properties
-2. Add width control option
-3. Add font size option
-4. Ensure file upload config is properly exposed
-
-### Phase 2: Update HTML Generation
-1. Add file input element when uploads enabled
-2. Add copy buttons to each message
-3. Include Prism.js CDN for syntax highlighting
-4. Apply custom colors via CSS variables
-5. Implement width control
-6. Add font size variables
-
-### Phase 3: JavaScript Implementation
-1. Handle file selection and base64 encoding
-2. Implement copy to clipboard functionality
-3. Initialize Prism.js for code highlighting
-4. Handle dynamic styling based on config
+## All Features Implemented
+- ✅ Full color customization (CSS variables)
+- ✅ Width control (px, %, auto)
+- ✅ Font size options (Small to Extra Large)
+- ✅ File upload with base64 encoding
+- ✅ Copy buttons on messages
+- ✅ Syntax highlighting with Prism.js
+- ✅ Theme support (dark/light/auto)
+- ✅ Markdown rendering
+- ✅ Timestamps
+- ✅ Compact mode
+- ✅ Max height control
 
 ### Phase 4: UI Enhancement Details
 

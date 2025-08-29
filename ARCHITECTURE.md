@@ -1,34 +1,33 @@
 # n8n Better Chat Node - Architecture
 
 ## Overview
-The n8n Better Chat Node provides two webhook trigger nodes for sophisticated chat interfaces in n8n workflows. Version 0.3.0 introduces BetterChatTrigger, which is fully compatible with n8n's Respond to Webhook node while maintaining all custom UI enhancements.
+The n8n Better Chat Node provides two webhook trigger nodes for sophisticated chat interfaces in n8n workflows. Version 0.3.25 uses a monolithic architecture for compatibility with n8n's node loading system.
 
-## Version 0.3.5 - Full Feature Implementation
+## Version 0.3.25 - Monolithic Structure
 
-### Key Features Now Implemented
-1. **Complete UI Customization**
-   - Full color control via CSS variables
-   - Width and font size configuration
-   - Theme support with custom overrides
+### Architecture Decision
+After attempting modularization in v0.3.23, we discovered that n8n's dynamic node loading system requires nodes to be self-contained. The project has been reverted to a monolithic structure where all code resides in single node files.
 
-2. **File Upload System**
-   - Base64 encoding for file data
-   - MIME type filtering
-   - Visual indicators for selected files
+### Technical Constraints
+1. **n8n Node Loading**: n8n loads nodes from `dist/nodes/[NodeName]/` directory
+2. **No Module Imports**: External module imports break n8n's loading mechanism
+3. **Self-Contained Files**: Each node must be fully self-contained in a single file
 
-3. **Enhanced Content Display**
-   - Syntax highlighting with Prism.js
-   - Copy buttons with visual feedback
-   - Markdown rendering improvements
-
-### Architecture Components
+### Current Architecture
 The project includes two nodes:
 1. **MinimalWebhook** - Original implementation (backward compatibility)
+   - Single file: `nodes/MinimalWebhook/MinimalWebhook.node.ts`
+   - Compiled to: `dist/nodes/MinimalWebhook/MinimalWebhook.node.js`
+   
 2. **BetterChatTrigger** - Full-featured node with all UI enhancements
+   - Single file: `nodes/BetterChatTrigger/BetterChatTrigger.node.ts` (1,496 lines)
+   - Compiled to: `dist/nodes/BetterChatTrigger/BetterChatTrigger.node.js`
+   - All utilities, constants, and types included inline
 
-### Why Two Nodes?
-- **MinimalWebhook**: Preserves backward compatibility for existing workflows
-- **BetterChatTrigger**: Follows n8n's official patterns for guaranteed compatibility with Respond to Webhook node
+### Why Monolithic?
+- **n8n Compatibility**: n8n's require() system doesn't resolve relative imports in community nodes
+- **Loading Mechanism**: Nodes are dynamically loaded, not bundled
+- **Proven Approach**: This structure works reliably across all n8n installations
 
 ## Design Principles
 
