@@ -136,7 +136,7 @@ export const FONT_FAMILY_OPTIONS = [
 		value: 'system',
 	},
 	{
-		name: 'Sans-serif',
+		name: 'Sans-Serif',
 		value: 'sans-serif',
 	},
 	{

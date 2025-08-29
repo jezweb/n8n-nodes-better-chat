@@ -36,7 +36,6 @@ export class BetterChatTrigger implements INodeType {
 		activationMessage: 'You can now make calls to your production chat URL.',
 		defaults: {
 			name: 'Better Chat Trigger',
-			color: '#667eea',
 		},
 		inputs: [],
 		outputs: [NodeConnectionType.Main],
@@ -72,7 +71,7 @@ export class BetterChatTrigger implements INodeType {
 					{
 						name: 'Hosted Chat',
 						value: 'hostedChat',
-						description: 'n8n provides complete chat interface with generated URL',
+						description: 'N8n provides complete chat interface with generated URL',
 					},
 					{
 						name: 'Embedded Chat',
@@ -171,6 +170,7 @@ export class BetterChatTrigger implements INodeType {
 				displayName: 'Initial Message',
 				name: 'initialMessage',
 				type: 'string',
+				default: '',
 				default: DEFAULT_CONFIG.INITIAL_MESSAGE,
 				description: 'Welcome message shown when chat loads',
 				displayOptions: {
@@ -380,7 +380,7 @@ export class BetterChatTrigger implements INodeType {
 						name: 'compactMode',
 						type: 'boolean',
 						default: false,
-						description: 'Reduce message spacing for more compact display',
+						description: 'Whether to reduce message spacing for more compact display',
 					},
 					{
 						displayName: 'Max Height',
@@ -400,14 +400,14 @@ export class BetterChatTrigger implements INodeType {
 							{
 								displayName: 'Primary Color',
 								name: 'primaryColor',
-								type: 'string',
+								type: 'color',
 								default: '#667eea',
 								description: 'Main accent color for buttons and highlights',
 							},
 							{
 								displayName: 'Background Color',
 								name: 'backgroundColor',
-								type: 'string',
+								type: 'color',
 								default: '',
 								placeholder: 'Leave empty for theme default',
 								description: 'Page background color',
@@ -423,7 +423,7 @@ export class BetterChatTrigger implements INodeType {
 							{
 								displayName: 'User Message Color',
 								name: 'userMessageColor',
-								type: 'string',
+								type: 'color',
 								default: '',
 								placeholder: 'Leave empty for theme default',
 								description: 'Background color for user messages',
@@ -431,7 +431,7 @@ export class BetterChatTrigger implements INodeType {
 							{
 								displayName: 'Assistant Message Color',
 								name: 'assistantMessageColor',
-								type: 'string',
+								type: 'color',
 								default: '',
 								placeholder: 'Leave empty for theme default',
 								description: 'Background color for assistant messages',
@@ -439,7 +439,7 @@ export class BetterChatTrigger implements INodeType {
 							{
 								displayName: 'Text Color',
 								name: 'textColor',
-								type: 'string',
+								type: 'color',
 								default: '',
 								placeholder: 'Leave empty for theme default',
 								description: 'Primary text color',
