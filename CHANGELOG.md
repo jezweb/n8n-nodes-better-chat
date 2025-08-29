@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.5] - 2025-08-29
+
+### Fixed
+- **CRITICAL FIX**: Completely resolved "No Webhook node found" error with Respond to Webhook node
+- Webhook configuration now matches n8n's official Chat Trigger pattern
+- Response mode moved to options collection parameter following n8n conventions
+- Dynamic responseMode evaluation using n8n expression syntax
+
+### Changed
+- responseMode parameter moved into 'options' collection for proper expression evaluation
+- Response mode values updated: 'lastNode' and 'responseNode' (replacing 'onReceived')
+- Simplified response handling - always returns workflowData for workflow continuation
+- Default response mode is now 'lastNode' for backward compatibility
+
+### Technical
+- Webhook responseMode uses expression: `'={{$parameter.options?.["responseMode"] || "lastNode" }}'`
+- This pattern allows n8n to recognize the node as a webhook trigger at registration time
+- Response handling unified for both lastNode and responseNode modes
+
 ## [0.2.4] - 2025-08-29
 
 ### Fixed

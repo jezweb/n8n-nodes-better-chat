@@ -160,20 +160,27 @@ const agentResponse = input.output || input.text || input.response;
 - 0.2.2: Simplified HTML response handling
 - 0.2.3: Added responseMode parameter (current issue)
 
-## Current Issue: Respond to Webhook Not Recognizing Node
+## RESOLVED: Respond to Webhook Recognition Issue
 
 ### Problem Analysis
 1. **Error**: "No Webhook node found in the workflow"
 2. **Cause**: The Respond to Webhook node doesn't recognize our Chat UI Trigger as a valid webhook node
-3. **Root Issue**: The webhook configuration with expression `'={{$parameter["responseMode"]}}'` isn't evaluated at node registration time
+3. **Root Issue**: Multiple attempts with different webhook configurations failed
 
-### Solution Approach
-1. **Static webhook configuration**: Use a fixed responseMode in webhook definition
-2. **Dynamic handling**: Check responseMode parameter in webhook function
-3. **Different responses based on mode**:
-   - GET requests: Always return immediately (HTML interface)
-   - POST requests with responseMode='onReceived': Return workflowData
-   - POST requests with responseMode='responseNode': Return workflowData for Respond to Webhook
+### Solution Evolution
+1. **v0.2.3**: Added responseMode parameter with expression - FAILED
+2. **v0.2.4**: Changed to static 'responseNode' value - FAILED
+3. **v0.2.5**: Matched n8n's official Chat Trigger pattern - SUCCESS
+
+### Final Solution (v0.2.5)
+Based on n8n's official Chat Trigger implementation:
+1. **Webhook configuration**: Uses n8n's expression pattern
+   ```typescript
+   responseMode: '={{$parameter.options?.["responseMode"] || "lastNode" }}' as any
+   ```
+2. **Parameter structure**: responseMode moved into 'options' collection
+3. **Response values**: 'lastNode' and 'responseNode' (not 'onReceived')
+4. **Simplified handling**: Always return workflowData for workflow continuation
 
 ### Implementation Plan
 1. Change webhook responseMode from expression to static value 'responseNode'

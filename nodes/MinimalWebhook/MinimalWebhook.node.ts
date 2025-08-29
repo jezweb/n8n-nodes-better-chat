@@ -52,7 +52,7 @@ export class MinimalWebhook implements INodeType {
 			{
 				name: 'default',
 				httpMethod: ['GET', 'POST'] as any, // Multiple methods for hosted chat
-				responseMode: 'responseNode', // Static value for n8n to recognize as webhook node
+				responseMode: '={{$parameter.options?.["responseMode"] || "lastNode" }}' as any,
 				path: '={{$parameter["webhookPath"]}}',
 			},
 		],
@@ -90,24 +90,33 @@ export class MinimalWebhook implements INodeType {
 				description: 'The path to listen for webhook requests',
 			},
 			{
-				displayName: 'Response Mode',
-				name: 'responseMode',
-				type: 'options',
+				displayName: 'Options',
+				name: 'options',
+				type: 'collection',
+				placeholder: 'Add Option',
+				default: {},
 				options: [
 					{
-						name: 'When Last Node Finishes',
-						value: 'onReceived',
-						description: 'Returns response automatically when workflow finishes',
-					},
-					{
-						name: 'Using Respond to Webhook Node',
-						value: 'responseNode',
-						description: 'Response defined by a Respond to Webhook node',
+						displayName: 'Response Mode',
+						name: 'responseMode',
+						type: 'options',
+						options: [
+							{
+								name: 'Last Node',
+								value: 'lastNode',
+								description: 'Returns response from the last executed node',
+							},
+							{
+								name: 'Respond to Webhook',
+								value: 'responseNode',
+								description: 'Response defined by a Respond to Webhook node',
+							},
+						],
+						default: 'lastNode',
+						description: 'When and how to respond to the webhook request',
+						hint: 'For Hosted Chat mode, use "Respond to Webhook" to control the response format',
 					},
 				],
-				default: 'onReceived',
-				description: 'When and how to respond to the webhook request',
-				hint: 'For Hosted Chat mode, use "Using Respond to Webhook Node" to control the response format',
 			},
 			{
 				displayName: 'Public Available',
@@ -320,7 +329,6 @@ export class MinimalWebhook implements INodeType {
 		
 		// Get node parameters
 		const chatMode = this.getNodeParameter('chatMode') as string;
-		const responseMode = this.getNodeParameter('responseMode', 'onReceived') as string;
 		const displayMode = this.getNodeParameter('displayMode') as string;
 		const outputFormat = this.getNodeParameter('outputFormat') as string;
 		const webhookPath = this.getNodeParameter('webhookPath') as string;
@@ -662,26 +670,12 @@ export class MinimalWebhook implements INodeType {
 		}
 		
 		// Handle response based on responseMode parameter
-		// POST requests respect the responseMode setting
-		if (responseMode === 'onReceived') {
-			// Return immediately with data (default for webhook mode)
-			return {
-				webhookResponse: {
-					status: 200,
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify(output),
-				},
-			};
-		} else {
-			// responseMode === 'responseNode'
-			// Return workflowData for Respond to Webhook node to handle
-			return {
-				workflowData: [
-					this.helpers.returnJsonArray([output]),
-				],
-			};
-		}
+		// For 'lastNode' mode or when using Respond to Webhook node
+		// Always return workflowData to let the workflow continue
+		return {
+			workflowData: [
+				this.helpers.returnJsonArray([output]),
+			],
+		};
 	}
 }
