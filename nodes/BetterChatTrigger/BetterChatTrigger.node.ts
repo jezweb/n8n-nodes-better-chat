@@ -10,6 +10,7 @@ import {
 const CHAT_TRIGGER_PATH_IDENTIFIER = 'chat';
 
 // Escape curly braces to prevent AI Agent template parsing errors
+// This function recursively escapes all string values in nested objects/arrays
 function escapeBraces(value: any): any {
 	if (typeof value === 'string') {
 		// Replace single braces with double braces for AI Agent compatibility
@@ -21,7 +22,9 @@ function escapeBraces(value: any): any {
 	if (value && typeof value === 'object') {
 		const escaped: any = {};
 		for (const key in value) {
-			escaped[key] = escapeBraces(value[key]);
+			if (value.hasOwnProperty(key)) {
+				escaped[key] = escapeBraces(value[key]);
+			}
 		}
 		return escaped;
 	}
@@ -1325,10 +1328,10 @@ export class BetterChatTrigger implements INodeType {
 			if (outputFormat === 'aiAgent') {
 				// Simplified output for AI Agent compatibility
 				output = {
-					chatInput: escapeBraces(userMessage),  // Escape braces to prevent template errors
+					chatInput: userMessage,
 					sessionId,
 					threadId,
-					messages: escapeBraces(processedMessages),  // Escape messages too
+					messages: processedMessages,
 					messageCount: messages.length,
 					timestamp: new Date().toISOString(),
 				};
@@ -1339,8 +1342,8 @@ export class BetterChatTrigger implements INodeType {
 				if (files.length > 0) {
 					output.hasFiles = true;
 					output.fileCount = files.length;
-					// File names only, escaped to prevent template errors
-					output.fileNames = files.map((f: any) => escapeBraces(f.name || 'unnamed'));
+					// File names only
+					output.fileNames = files.map((f: any) => f.name || 'unnamed');
 				}
 				
 				// Always add chat URL for hosted mode - make it prominent
@@ -1351,9 +1354,9 @@ export class BetterChatTrigger implements INodeType {
 			} else {
 				// Detailed output with all metadata
 				output = {
-					chatInput: escapeBraces(userMessage),  // Escape for consistency
-					messages: escapeBraces(processedMessages),
-					userMessage: escapeBraces(userMessage),
+					chatInput: userMessage,
+					messages: processedMessages,
+					userMessage: userMessage,
 					sessionId,
 					threadId,
 					// files: files.length > 0 ? files : undefined, // Files are in binary data, not JSON
@@ -1394,6 +1397,11 @@ export class BetterChatTrigger implements INodeType {
 					},
 				};
 			}
+			
+			// CRITICAL: Escape ALL curly braces in the entire output object
+			// This prevents AI Agent template parsing errors from ANY string field
+			// Must be done after output is fully constructed but before returning
+			output = escapeBraces(output);
 			
 			// Convert files to n8n binary format if present
 			const returnData: any = {
