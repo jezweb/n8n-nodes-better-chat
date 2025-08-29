@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-better-chat",
-  "version": "0.3.9",
+  "version": "0.3.10",
   "description": "A sophisticated chat UI node for n8n workflows with rich text rendering, file handling, and advanced conversation features",
   "keywords": [
     "n8n-community-node-package",
