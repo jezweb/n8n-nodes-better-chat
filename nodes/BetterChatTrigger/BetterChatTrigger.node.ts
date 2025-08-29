@@ -961,7 +961,9 @@ export class BetterChatTrigger implements INodeType {
 			
 			// Add copy button if enabled
 			${features.includes('copy') ? 
-			`html += '<button class="copy-button" onclick="copyToClipboard(this, \\'' + content.replace(/'/g, "\\\\'") + '\\')">📋</button>';` 
+			`html += '<button class="copy-button" data-message-content="">📋</button>';
+			// Store content in data attribute safely
+			messageDiv.querySelector('.copy-button').setAttribute('data-message-content', content);` 
 			: '// No copy button'}
 			
 			messageDiv.innerHTML = html;
@@ -976,7 +978,10 @@ export class BetterChatTrigger implements INodeType {
 			: '// No syntax highlighting'}
 		}
 		
-		function copyToClipboard(button, text) {
+		function copyToClipboard(button) {
+			// Get text from data attribute
+			const text = button.getAttribute('data-message-content') || '';
+			
 			// Create a temporary textarea to copy from
 			const temp = document.createElement('textarea');
 			temp.value = text.replace(/<[^>]*>/g, ''); // Strip HTML tags
@@ -1012,6 +1017,13 @@ export class BetterChatTrigger implements INodeType {
 		document.getElementById('messageInput').addEventListener('keypress', function(e) {
 			if (e.key === 'Enter' && !sending) {
 				sendMessage();
+			}
+		});
+		
+		// Event delegation for copy buttons
+		document.getElementById('messagesDiv').addEventListener('click', function(e) {
+			if (e.target && e.target.classList.contains('copy-button')) {
+				copyToClipboard(e.target);
 			}
 		});
 	</script>
