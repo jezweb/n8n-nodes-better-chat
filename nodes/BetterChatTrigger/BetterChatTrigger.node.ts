@@ -44,8 +44,8 @@ export class BetterChatTrigger implements INodeType {
 		name: 'betterChatTrigger',
 		icon: 'file:chat.svg',
 		group: ['trigger'],
-		version: [1, 1.1, 1.2, 1.3],
-		defaultVersion: 1.3,
+		version: 1,
+		defaultVersion: 1,
 		description: 'Enhanced chat trigger with rich UI features and full Respond to Webhook compatibility',
 		defaults: {
 			name: 'Better Chat Trigger',
