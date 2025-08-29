@@ -291,3 +291,48 @@ return {
 - [x] Base64 encoding works correctly
 - [x] Multiple file support (if enabled)
 - [x] Binary data appears in Binary tab of connected nodes
+
+## Open Chat Button & Binary Structure Fix (2025-08-29)
+
+### Issues Identified:
+1. **Missing Open Chat Button** - Standard n8n chat trigger has a button to open chat interface
+2. **Binary data structure error** - AI Agent showing syntax error with nested data structure
+3. **Memory integration issue** - Error with "action": "loadMemoryVariables" in AI Agent
+
+### Root Causes:
+1. **Nested array issue**: Returning `[[returnData]]` instead of `[returnData]`
+2. **webhookDescription not supported**: Older n8n interface doesn't support this property
+3. **Data structure mismatch**: AI Agent expects flatter structure
+
+### Fix Implementation:
+
+#### 1. Fix Binary Data Return Structure
+Change from:
+```typescript
+return {
+    workflowData: [
+        [returnData],  // Double nested
+    ],
+};
+```
+
+To:
+```typescript
+return {
+    workflowData: [
+        returnData,  // Single level
+    ],
+};
+```
+
+#### 2. Add Chat URL to Output
+Since webhookDescription isn't supported, add the chat URL directly to output for easy access:
+```typescript
+// Always include chatUrl in output for easy access
+if (mode === 'hostedChat') {
+    output.chatUrl = chatUrl;
+}
+```
+
+#### 3. Simplify Data Structure
+Ensure clean data structure without unnecessary nesting that confuses AI Agent memory system.

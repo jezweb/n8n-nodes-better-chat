@@ -1021,8 +1021,10 @@ export class BetterChatTrigger implements INodeType {
 					output.files = files;
 				}
 				
-				if (chatUrl) {
+				// Always add chat URL for hosted mode - make it prominent
+				if (mode === 'hostedChat' && chatUrl) {
 					output.chatUrl = chatUrl;
+					output._chatAccess = `🔗 Open Chat: ${chatUrl}`;
 				}
 			} else {
 				// Detailed output with all metadata
@@ -1095,7 +1097,7 @@ export class BetterChatTrigger implements INodeType {
 			// This ensures compatibility with both lastNode and responseNode modes
 			return {
 				workflowData: [
-					[returnData],
+					returnData,  // Fixed: removed double nesting that was causing AI Agent errors
 				],
 			};
 		}
