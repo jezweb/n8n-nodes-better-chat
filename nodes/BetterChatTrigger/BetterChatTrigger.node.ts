@@ -9,6 +9,25 @@ import {
 
 const CHAT_TRIGGER_PATH_IDENTIFIER = 'chat';
 
+// Escape curly braces to prevent AI Agent template parsing errors
+function escapeBraces(value: any): any {
+	if (typeof value === 'string') {
+		// Replace single braces with double braces for AI Agent compatibility
+		return value.replace(/{/g, '{{').replace(/}/g, '}}');
+	}
+	if (Array.isArray(value)) {
+		return value.map(escapeBraces);
+	}
+	if (value && typeof value === 'object') {
+		const escaped: any = {};
+		for (const key in value) {
+			escaped[key] = escapeBraces(value[key]);
+		}
+		return escaped;
+	}
+	return value;
+}
+
 function processMessages(messages: any[], features: string[]): any[] {
 	return messages.map(message => {
 		const processed = { ...message };
@@ -1306,10 +1325,10 @@ export class BetterChatTrigger implements INodeType {
 			if (outputFormat === 'aiAgent') {
 				// Simplified output for AI Agent compatibility
 				output = {
-					chatInput: userMessage,
+					chatInput: escapeBraces(userMessage),  // Escape braces to prevent template errors
 					sessionId,
 					threadId,
-					messages: processedMessages,
+					messages: escapeBraces(processedMessages),  // Escape messages too
 					messageCount: messages.length,
 					timestamp: new Date().toISOString(),
 				};
@@ -1320,8 +1339,8 @@ export class BetterChatTrigger implements INodeType {
 				if (files.length > 0) {
 					output.hasFiles = true;
 					output.fileCount = files.length;
-					// File names only, no data
-					output.fileNames = files.map((f: any) => f.name);
+					// File names only, escaped to prevent template errors
+					output.fileNames = files.map((f: any) => escapeBraces(f.name || 'unnamed'));
 				}
 				
 				// Always add chat URL for hosted mode - make it prominent
@@ -1332,9 +1351,9 @@ export class BetterChatTrigger implements INodeType {
 			} else {
 				// Detailed output with all metadata
 				output = {
-					chatInput: userMessage,
-					messages: processedMessages,
-					userMessage,
+					chatInput: escapeBraces(userMessage),  // Escape for consistency
+					messages: escapeBraces(processedMessages),
+					userMessage: escapeBraces(userMessage),
 					sessionId,
 					threadId,
 					// files: files.length > 0 ? files : undefined, // Files are in binary data, not JSON

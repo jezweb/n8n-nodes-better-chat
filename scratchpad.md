@@ -439,6 +439,52 @@ Ensure clean data structure without unnecessary nesting that confuses AI Agent m
    - Theme: Light/Dark/Auto
    - Compact Mode: Spacing control
 
+## "Single '}' in template" Error Fix (2025-08-29)
+
+### Problem Analysis
+The AI Agent node uses curly braces `{}` for template variables (like `{tools}`), following LangChain patterns. When input data contains unescaped curly braces, it causes template parsing errors.
+
+### Root Causes
+1. **File metadata in JSON** - File names or data with curly braces
+2. **JSON structures** - Any JSON in the output breaks the template parser
+3. **Base64 data** - Sometimes contains characters that look like template syntax
+
+### Solution: Escape Curly Braces
+Replace all single braces with double braces in string values:
+- `{` becomes `{{`
+- `}` becomes `}}`
+
+### Implementation Strategy
+```typescript
+function escapeBraces(value: any): any {
+    if (typeof value === 'string') {
+        return value.replace(/{/g, '{{').replace(/}/g, '}}');
+    }
+    if (Array.isArray(value)) {
+        return value.map(escapeBraces);
+    }
+    if (value && typeof value === 'object') {
+        const escaped: any = {};
+        for (const key in value) {
+            escaped[key] = escapeBraces(value[key]);
+        }
+        return escaped;
+    }
+    return value;
+}
+```
+
+Apply to:
+- `chatInput` field
+- Message content
+- File names
+- Any string that might contain JSON
+
+### Alternative: Minimize File Data in JSON
+- Only include `hasFiles: true` and `fileCount: N`
+- Keep all file data in binary property only
+- Avoid any complex structures in JSON output
+
 ### Proposed Enhancements:
 
 #### 1. Responsive Dimensions ✨
