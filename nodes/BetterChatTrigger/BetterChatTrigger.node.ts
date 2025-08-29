@@ -54,7 +54,7 @@ export class BetterChatTrigger implements INodeType {
 		outputs: [NodeConnectionType.Main],
 		credentials: [
 			{
-				name: 'httpBasicAuth',
+				name: 'httpBasicAuthApi',
 				required: true,
 				displayOptions: {
 					show: {
@@ -209,23 +209,11 @@ export class BetterChatTrigger implements INodeType {
 				default: {},
 				options: [
 					{
-						displayName: 'Output Format',
-						name: 'outputFormat',
-						type: 'options',
-						options: [
-							{
-								name: 'AI Agent Compatible',
-								value: 'aiAgent',
-								description: 'Simplified output with chatInput field for AI Agent nodes',
-							},
-							{
-								name: 'Detailed',
-								value: 'detailed',
-								description: 'Full output with all metadata and context',
-							},
-						],
-						default: 'aiAgent',
-						description: 'Choose output structure format',
+						displayName: 'Compact Mode',
+						name: 'compactMode',
+						type: 'boolean',
+						default: false,
+						description: 'Whether to use compact message spacing',
 					},
 					{
 						displayName: 'Display Mode',
@@ -276,6 +264,32 @@ export class BetterChatTrigger implements INodeType {
 						description: 'Chat interface features to enable',
 					},
 					{
+						displayName: 'Max Height (Px)',
+						name: 'maxHeight',
+						type: 'number',
+						default: 600,
+						description: 'Maximum height of the chat container',
+					},
+					{
+						displayName: 'Output Format',
+						name: 'outputFormat',
+						type: 'options',
+						options: [
+							{
+								name: 'AI Agent Compatible',
+								value: 'aiAgent',
+								description: 'Simplified output with chatInput field for AI Agent nodes',
+							},
+							{
+								name: 'Detailed',
+								value: 'detailed',
+								description: 'Full output with all metadata and context',
+							},
+						],
+						default: 'aiAgent',
+						description: 'Choose output structure format',
+					},
+					{
 						displayName: 'Theme',
 						name: 'theme',
 						type: 'options',
@@ -295,20 +309,6 @@ export class BetterChatTrigger implements INodeType {
 						],
 						default: 'auto',
 						description: 'Color theme for the chat interface',
-					},
-					{
-						displayName: 'Compact Mode',
-						name: 'compactMode',
-						type: 'boolean',
-						default: false,
-						description: 'Whether to use compact message spacing',
-					},
-					{
-						displayName: 'Max Height (px)',
-						name: 'maxHeight',
-						type: 'number',
-						default: 600,
-						description: 'Maximum height of the chat container',
 					},
 				],
 			},
