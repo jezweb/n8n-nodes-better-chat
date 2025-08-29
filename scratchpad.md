@@ -292,52 +292,73 @@ return {
 - [x] Multiple file support (if enabled)
 - [x] Binary data appears in Binary tab of connected nodes
 
-## File Upload Template Error Investigation (2025-08-29 Update)
+## File Upload Template Error Resolution (v0.3.15) ✅
 
-### Problem Still Persists in v0.3.14
-Despite previous fixes, the "Single '}' in template" error still occurs when uploading files.
+### Problem Resolution Complete
+The "Single '}' in template" error has been fully resolved in v0.3.15 through comprehensive fixes.
 
-### Root Causes Identified:
-1. **Frontend sends data URLs with special characters**
-   - `fileToBase64()` uses `readAsDataURL()` which creates: `data:image/png;base64,iVBORw0...`
-   - Characters like `:`, `;`, `/` break template parsing in AI Agent
+### Root Causes Identified and Fixed:
+1. **Frontend data URL issue** ✅
+   - Problem: `fileToBase64()` was sending full data URLs with special characters
+   - Solution: Frontend now extracts pure base64 from data URLs before sending
 
-2. **Raw body data leakage**
-   - Line 1169: `body: bodyData` includes the full file data in detailed output
-   - Even though we removed files from main output, it still reaches AI Agent via `raw.body.files`
+2. **Raw body data leakage** ✅
+   - Problem: Full file data in `body: bodyData` reaching AI Agent
+   - Solution: Backend now cleans raw body data, removing file content
 
-3. **Backend still receives data URLs**
-   - We extract base64 on backend, but frontend should send pure base64
+3. **Template literal nesting** ✅
+   - Problem: Complex conditional JavaScript generation with nested templates
+   - Solution: Refactored to use runtime configuration object (chatConfig)
 
-### Required Fixes:
-1. **Frontend**: Change `fileToBase64` to send pure base64:
-   ```javascript
-   function fileToBase64(file) {
-       return new Promise((resolve, reject) => {
-           const reader = new FileReader();
-           reader.onload = () => {
-               const dataUrl = reader.result;
-               const base64 = dataUrl.split(',')[1]; // Extract pure base64
-               resolve(base64);
-           };
-           reader.onerror = reject;
-           reader.readAsDataURL(file);
-       });
-   }
-   ```
+### Final Implementation (v0.3.15):
 
-2. **Backend**: Clean raw body data before including:
-   ```javascript
-   const cleanBodyData = { ...bodyData };
-   if (cleanBodyData.files) {
-       cleanBodyData.files = cleanBodyData.files.map(f => ({
-           name: f.name,
-           type: f.type,
-           size: f.size
-           // data removed
-       }));
-   }
-   ```
+#### Frontend Fix - Pure Base64 Extraction:
+```javascript
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const dataUrl = reader.result;
+            const base64 = dataUrl.split(',')[1]; // Extract pure base64
+            resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+```
+
+#### Backend Fix - Clean Body Data:
+```javascript
+const cleanBodyData = { ...bodyData };
+if (cleanBodyData.files) {
+    cleanBodyData.files = cleanBodyData.files.map(f => ({
+        name: f.name,
+        type: f.type,
+        size: f.size
+        // data field removed entirely
+    }));
+}
+// Use cleanBodyData in detailed output
+```
+
+#### Runtime Configuration Pattern:
+```javascript
+const chatConfig = {
+    features: ${JSON.stringify(features)},
+    displayMode: '${displayMode}',
+    theme: '${theme}',
+    // All conditional logic now at runtime
+};
+```
+
+### Testing Confirmation:
+- [x] File uploads work without template errors
+- [x] AI Agent receives files in binary format
+- [x] No special characters in JSON output
+- [x] Copy buttons work without escaping issues
+- [x] Send button remains functional
+- [x] All features work with runtime checks
 
 ## Open Chat Button & Binary Structure Fix (2025-08-29)
 
@@ -385,15 +406,38 @@ if (mode === 'hostedChat') {
 #### 3. Simplify Data Structure ✅
 Ensure clean data structure without unnecessary nesting that confuses AI Agent memory system.
 
-## Enhanced Customization Options (2025-08-29)
+## Enhanced Customization Options (v0.3.16) ✅
 
-### Current Customizations Available:
-1. **Width** - Currently accepts px values (e.g., "600px")
-2. **Max Height** - Currently px only (e.g., 600)
-3. **Font Size** - Small/Medium/Large/Extra Large
-4. **Colors** - Primary, Background, User/Assistant messages, Text
-5. **Theme** - Light/Dark/Auto
-6. **Compact Mode** - Toggle for spacing
+### Implemented Customizations:
+1. **Responsive Dimensions** ✅
+   - Width: Supports px, %, vw, rem units
+   - Height: Supports px, vh, % units  
+   - Max/Min Width: Proper constraints
+   - Max Height: Flexible units
+
+2. **Advanced Styling Options** ✅
+   - Border Radius: Customizable corners
+   - Box Shadow: None/Small/Medium/Large/Glow
+   - Border Style: Custom border configuration
+   - Padding: Internal spacing control
+   - Margin: External spacing control
+
+3. **Typography Enhancements** ✅
+   - Font Family: System/Sans-serif/Serif/Monospace
+   - Line Height: Compact/Normal/Relaxed/Loose
+   - Font Size: Small/Medium/Large/Extra Large
+
+4. **Animation & Transitions** ✅
+   - Enable/Disable animations toggle
+   - Animation Speed: Fast/Normal/Slow
+   - Smooth hover effects on messages
+   - Button scale animations
+   - Fade-in message animations
+
+5. **Existing Features** ✅
+   - Colors: Full customization
+   - Theme: Light/Dark/Auto
+   - Compact Mode: Spacing control
 
 ### Proposed Enhancements:
 

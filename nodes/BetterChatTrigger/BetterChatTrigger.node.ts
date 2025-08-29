@@ -415,6 +415,144 @@ export class BetterChatTrigger implements INodeType {
 						default: '100%',
 						description: 'Width of the chat container (e.g., 600px, 80%, 100vw)',
 					},
+					// Advanced Styling Options
+					{
+						displayName: 'Border Radius',
+						name: 'borderRadius',
+						type: 'string',
+						default: '10px',
+						description: 'Roundness of corners (e.g., 10px, 20px, 50%)',
+					},
+					{
+						displayName: 'Box Shadow',
+						name: 'boxShadow',
+						type: 'options',
+						options: [
+							{
+								name: 'None',
+								value: 'none',
+							},
+							{
+								name: 'Small',
+								value: '0 2px 4px rgba(0,0,0,0.1)',
+							},
+							{
+								name: 'Medium',
+								value: '0 10px 30px rgba(0,0,0,0.2)',
+							},
+							{
+								name: 'Large',
+								value: '0 20px 60px rgba(0,0,0,0.3)',
+							},
+							{
+								name: 'Glow',
+								value: '0 0 30px rgba(102,126,234,0.3)',
+							},
+						],
+						default: '0 20px 60px rgba(0,0,0,0.3)',
+						description: 'Shadow effect for the chat container',
+					},
+					{
+						displayName: 'Border Style',
+						name: 'borderStyle',
+						type: 'string',
+						default: 'none',
+						description: 'Border style (e.g., none, 1px solid #ddd, 2px dashed #999)',
+					},
+					{
+						displayName: 'Padding',
+						name: 'padding',
+						type: 'string',
+						default: '0',
+						description: 'Internal spacing (e.g., 20px, 1rem, 10px 20px)',
+					},
+					{
+						displayName: 'Margin',
+						name: 'margin',
+						type: 'string',
+						default: '20px auto',
+						description: 'External spacing (e.g., 20px, auto, 10px 20px)',
+					},
+					// Typography Options
+					{
+						displayName: 'Font Family',
+						name: 'fontFamily',
+						type: 'options',
+						options: [
+							{
+								name: 'System',
+								value: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+							},
+							{
+								name: 'Sans-serif',
+								value: '"Inter", "Helvetica Neue", Arial, sans-serif',
+							},
+							{
+								name: 'Serif',
+								value: 'Georgia, "Times New Roman", Times, serif',
+							},
+							{
+								name: 'Monospace',
+								value: '"JetBrains Mono", "Fira Code", Monaco, Consolas, monospace',
+							},
+						],
+						default: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+						description: 'Font family for the chat interface',
+					},
+					{
+						displayName: 'Line Height',
+						name: 'lineHeight',
+						type: 'options',
+						options: [
+							{
+								name: 'Compact',
+								value: '1.2',
+							},
+							{
+								name: 'Normal',
+								value: '1.5',
+							},
+							{
+								name: 'Relaxed',
+								value: '1.8',
+							},
+							{
+								name: 'Loose',
+								value: '2',
+							},
+						],
+						default: '1.5',
+						description: 'Line spacing for message text',
+					},
+					// Animation Options
+					{
+						displayName: 'Enable Animations',
+						name: 'enableAnimations',
+						type: 'boolean',
+						default: true,
+						description: 'Whether to enable smooth transitions and animations',
+					},
+					{
+						displayName: 'Animation Speed',
+						name: 'animationSpeed',
+						type: 'options',
+						options: [
+							{
+								name: 'Fast',
+								value: '150ms',
+							},
+							{
+								name: 'Normal',
+								value: '300ms',
+							},
+							{
+								name: 'Slow',
+								value: '500ms',
+							},
+						],
+						default: '300ms',
+						description: 'Speed of transitions and animations',
+					},
 				],
 			},
 		],
@@ -454,6 +592,21 @@ export class BetterChatTrigger implements INodeType {
 		const minWidth = (uiEnhancements.minWidth as string) || '320px';
 		const fontSize = (uiEnhancements.fontSize as string) || 'medium';
 		const customColors = (uiEnhancements.customColors as IDataObject) || {};
+		
+		// Get advanced styling options
+		const borderRadius = (uiEnhancements.borderRadius as string) || '10px';
+		const boxShadow = (uiEnhancements.boxShadow as string) || '0 20px 60px rgba(0,0,0,0.3)';
+		const borderStyle = (uiEnhancements.borderStyle as string) || 'none';
+		const padding = (uiEnhancements.padding as string) || '0';
+		const margin = (uiEnhancements.margin as string) || '20px auto';
+		
+		// Get typography options
+		const fontFamily = (uiEnhancements.fontFamily as string) || '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+		const lineHeight = (uiEnhancements.lineHeight as string) || '1.5';
+		
+		// Get animation options
+		const enableAnimations = (uiEnhancements.enableAnimations as boolean) !== false;
+		const animationSpeed = (uiEnhancements.animationSpeed as string) || '300ms';
 		
 		// Handle authentication
 		if (authentication === 'basicAuth') {
@@ -536,8 +689,11 @@ export class BetterChatTrigger implements INodeType {
 		
 		.chat-container {
 			background: var(--container-bg);
-			border-radius: 10px;
-			box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+			border-radius: ${borderRadius};
+			box-shadow: ${boxShadow};
+			border: ${borderStyle};
+			padding: ${padding};
+			margin: ${margin};
 			width: ${width};
 			max-width: ${maxWidth};
 			min-width: ${minWidth};
@@ -546,6 +702,11 @@ export class BetterChatTrigger implements INodeType {
 			display: flex;
 			flex-direction: column;
 			color: var(--text-color);
+			font-family: ${fontFamily};
+			line-height: ${lineHeight};
+			${enableAnimations ? `
+				transition: all ${animationSpeed} ease;
+			` : ''}
 		}
 		
 		.chat-header {
@@ -576,9 +737,19 @@ export class BetterChatTrigger implements INodeType {
 			margin-bottom: ${compactMode ? '10px' : '15px'};
 			padding: ${compactMode ? '8px 12px' : '10px 15px'};
 			border-radius: 10px;
-			animation: fadeIn 0.3s ease-in;
 			position: relative;
+			${enableAnimations ? `
+				animation: fadeIn ${animationSpeed} ease-in;
+				transition: transform ${animationSpeed} ease, box-shadow ${animationSpeed} ease;
+			` : ''}
 		}
+		
+		${enableAnimations ? `
+		.message:hover {
+			transform: translateY(-1px);
+			box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+		}
+		` : ''}
 		
 		.message.user {
 			background: var(--user-msg-bg);
@@ -642,13 +813,23 @@ export class BetterChatTrigger implements INodeType {
 			font-size: 16px;
 		}
 		
+		.chat-input button {
+			${enableAnimations ? `
+				transition: all ${animationSpeed} ease;
+			` : ''}
+		}
+		
 		.chat-input button:hover {
 			opacity: 0.9;
+			${enableAnimations ? `
+				transform: scale(1.05);
+			` : ''}
 		}
 		
 		.chat-input button:disabled {
 			opacity: 0.5;
 			cursor: not-allowed;
+			transform: none;
 		}
 		
 		/* File upload styles */
