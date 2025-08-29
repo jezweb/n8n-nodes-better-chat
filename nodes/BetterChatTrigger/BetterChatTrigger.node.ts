@@ -1451,9 +1451,12 @@ export class BetterChatTrigger implements INodeType {
 			
 			// Always return workflowData to let the workflow continue
 			// This ensures compatibility with both lastNode and responseNode modes
+			// n8n expects different array structures:
+			// - With binary data: [returnData] (single level)
+			// - Without binary data: [[returnData]] (double nested for batch processing)
 			return {
 				workflowData: [
-					returnData,  // Single level array for proper binary data handling
+					returnData.binary ? returnData : [returnData],
 				],
 			};
 		}
