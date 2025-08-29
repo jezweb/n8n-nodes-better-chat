@@ -204,25 +204,23 @@ if (authentication === 'basicAuth') {
 ## File Upload Issues Fix (2025-08-29)
 
 ### Problems Identified:
-1. **Attachment icon doesn't scale properly** - Fixed 40x40px size doesn't adapt to different contexts
-2. **File data not reaching AI agent** - Files sent from frontend but not extracted in webhook handler
+1. **Attachment icon doesn't scale properly** - Fixed 40x40px size doesn't adapt to different contexts ✅
+2. **File data not reaching AI agent** - Files sent from frontend but not extracted in webhook handler ✅
+3. **Binary data format** - Not aligned with n8n standard structure ✅
+4. **Missing Open Chat button** - UI element for hosted chat access ✅
 
 ### Fix Implementation:
 
-#### 1. Responsive Attachment Icon
-Replace fixed pixel sizing with relative em units:
-```css
-.file-upload label {
-    padding: 0.5em;
-    width: 2.5em;
-    height: 2.5em;
-    line-height: 1.5em;
-    font-size: 1em;
-}
+#### 1. Responsive Attachment Icon ✅
+Replaced emoji with SVG icon using relative em units:
+```svg
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 1.2em; height: 1.2em;">
+    <path d="M19.8278..." stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
 ```
 
-#### 2. File Data Handling in Webhook
-Add file extraction in POST handler:
+#### 2. File Data Handling in Webhook ✅
+Added file extraction in POST handler:
 ```typescript
 // Extract files from request
 const files = bodyData.files || [];
@@ -230,21 +228,66 @@ const files = bodyData.files || [];
 // Include in output
 output = {
     chatInput: userMessage,
-    files: files,  // Add this line
+    files: files,
     sessionId,
     threadId,
     // ... rest of output
 };
 ```
 
-#### 3. Visual Improvements
+#### 3. Binary Data Format Alignment ✅
+Convert files to n8n standard binary format:
+```typescript
+// Convert files to n8n binary format if present
+const returnData: any = {
+    json: output,
+};
+
+// Add binary data if files are present
+if (files.length > 0) {
+    const binary: any = {};
+    
+    files.forEach((file: any, index: number) => {
+        const binaryPropertyName = `data${index}`;
+        
+        // Convert base64 to Buffer
+        const buffer = Buffer.from(file.data, 'base64');
+        
+        // Add to binary object in n8n standard format
+        binary[binaryPropertyName] = {
+            data: buffer,
+            fileName: file.name,
+            mimeType: file.type || 'application/octet-stream',
+            fileSize: buffer.length,
+        };
+        
+        // Also keep reference in JSON for backward compatibility
+        if (!returnData.json.binaryPropertyNames) {
+            returnData.json.binaryPropertyNames = [];
+        }
+        returnData.json.binaryPropertyNames.push(binaryPropertyName);
+    });
+    
+    returnData.binary = binary;
+}
+
+return {
+    workflowData: [
+        [returnData],
+    ],
+};
+```
+
+#### 4. Visual Improvements ✅
+- SVG paperclip icon scales properly
 - File indicator shows file count
 - Tooltip with file name on hover
 - Clear visual feedback when file attached
 
 ### Testing Checklist:
-- [ ] Icon scales with font size settings
-- [ ] File data appears in workflow output
-- [ ] AI Agent receives file information
-- [ ] Base64 encoding works correctly
-- [ ] Multiple file support (if enabled)
+- [x] Icon scales with font size settings
+- [x] File data appears in workflow output
+- [x] AI Agent receives file information in binary format
+- [x] Base64 encoding works correctly
+- [x] Multiple file support (if enabled)
+- [x] Binary data appears in Binary tab of connected nodes

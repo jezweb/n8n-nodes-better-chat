@@ -744,7 +744,11 @@ export class BetterChatTrigger implements INodeType {
 			${allowFileUploads ? `
 			<div class="file-upload">
 				<input type="file" id="fileInput" accept="${allowedFilesMimeTypes}" onchange="handleFileSelect(event)">
-				<label for="fileInput" title="Attach file">📎</label>
+				<label for="fileInput" title="Attach file">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 1.2em; height: 1.2em;">
+						<path d="M19.8278 11.2437L12.7074 18.3641C10.7548 20.3167 7.58896 20.3167 5.63634 18.3641C3.68372 16.4114 3.68372 13.2456 5.63634 11.293L12.4717 4.45763C13.7735 3.15589 15.884 3.15589 17.1858 4.45763C18.4875 5.75938 18.4875 7.86993 17.1858 9.17168L10.3614 15.9961C9.71048 16.647 8.6552 16.647 8.00433 15.9961C7.35345 15.3452 7.35345 14.2899 8.00433 13.6391L14.2258 7.41762" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+				</label>
 				<span class="file-indicator" id="fileIndicator" style="display: none;">1</span>
 			</div>
 			` : ''}
@@ -1054,11 +1058,44 @@ export class BetterChatTrigger implements INodeType {
 				};
 			}
 			
+			// Convert files to n8n binary format if present
+			const returnData: any = {
+				json: output,
+			};
+			
+			// Add binary data if files are present
+			if (files.length > 0) {
+				const binary: any = {};
+				
+				files.forEach((file: any, index: number) => {
+					const binaryPropertyName = `data${index}`;
+					
+					// Convert base64 to Buffer
+					const buffer = Buffer.from(file.data, 'base64');
+					
+					// Add to binary object in n8n standard format
+					binary[binaryPropertyName] = {
+						data: buffer,
+						fileName: file.name,
+						mimeType: file.type || 'application/octet-stream',
+						fileSize: buffer.length,
+					};
+					
+					// Also keep reference in JSON for backward compatibility
+					if (!returnData.json.binaryPropertyNames) {
+						returnData.json.binaryPropertyNames = [];
+					}
+					returnData.json.binaryPropertyNames.push(binaryPropertyName);
+				});
+				
+				returnData.binary = binary;
+			}
+			
 			// Always return workflowData to let the workflow continue
 			// This ensures compatibility with both lastNode and responseNode modes
 			return {
 				workflowData: [
-					this.helpers.returnJsonArray([output]),
+					[returnData],
 				],
 			};
 		}
