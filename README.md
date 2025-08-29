@@ -90,7 +90,7 @@ n8n start
 1. **Add the Node**: Drag the "Chat UI Trigger" node from the trigger nodes panel
 2. **Choose Chat Access Mode** (v0.2.0+):
    - `Webhook Only`: Basic webhook endpoint
-   - `Hosted Chat`: n8n provides chat interface with URL
+   - `Hosted Chat`: n8n provides chat interface with URL (**[See Setup Guide](HOSTED_CHAT_SETUP.md)**)
    - `Embedded Chat`: For @n8n/chat widget integration
 3. **Configure Webhook Path**: Set the path for receiving chat messages (default: `webhook`)
 4. **Choose Output Format**:
@@ -109,10 +109,9 @@ n8n start
 
 #### Hosted Chat Interface (v0.2.0+)
 ```
-Browser → GET [Chat UI Trigger] → Serves HTML Interface
-   ↓                                        ↑
-   └── POST Message → [AI Agent] → Response ┘
+[Chat UI Trigger] → [AI Agent] → [Respond to Webhook]
 ```
+**Important:** Hosted Chat requires a "Respond to Webhook" node. [See full setup guide](HOSTED_CHAT_SETUP.md)
 
 #### Simple Webhook Integration
 ```

@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.4] - 2025-08-29
+
+### Fixed
+- **Critical**: Respond to Webhook node now properly recognizes the Chat UI Trigger
+- Changed webhook responseMode from expression to static 'responseNode' value
+- Dynamic responseMode handling now occurs at runtime in webhook function
+- Both automatic response (onReceived) and manual response (responseNode) modes work correctly
+
+### Technical
+- Webhook configuration uses static value for n8n node registration
+- Runtime parameter evaluation determines actual response behavior
+- Proper workflowData structure returned for Respond to Webhook compatibility
+
+## [0.2.3] - 2025-08-29
+
+### Added
+- **Response Mode Parameter**: New configuration option to control webhook response behavior
+  - "When Last Node Finishes" (onReceived) - Automatic response when workflow completes
+  - "Using Respond to Webhook Node" (responseNode) - Manual response control via Respond to Webhook node
+- Response mode now properly supports the Respond to Webhook node for hosted chat
+
+### Fixed
+- Hosted chat now works correctly with Respond to Webhook node
+- Updated JSON syntax in Response Body field to use single expression format
+- Documentation updated with correct expression syntax for Respond to Webhook node
+
+### Changed
+- Default response mode set to "onReceived" for backward compatibility
+- HOSTED_CHAT_SETUP.md updated with correct JSON expression syntax
+- Response Body examples now use proper n8n expression format: `={{ {"response": $json.output} }}`
+
 ## [0.2.2] - 2025-08-28
 
 ### Fixed

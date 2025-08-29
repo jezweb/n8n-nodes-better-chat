@@ -156,9 +156,57 @@ const agentResponse = input.output || input.text || input.response;
 ## Version History
 - 0.1.17: Current version with AI Agent compatibility
 - 0.2.0: Add Chat Trigger features (planned)
+- 0.2.1: Fixed HTML rendering issue
+- 0.2.2: Simplified HTML response handling
+- 0.2.3: Added responseMode parameter (current issue)
+
+## Current Issue: Respond to Webhook Not Recognizing Node
+
+### Problem Analysis
+1. **Error**: "No Webhook node found in the workflow"
+2. **Cause**: The Respond to Webhook node doesn't recognize our Chat UI Trigger as a valid webhook node
+3. **Root Issue**: The webhook configuration with expression `'={{$parameter["responseMode"]}}'` isn't evaluated at node registration time
+
+### Solution Approach
+1. **Static webhook configuration**: Use a fixed responseMode in webhook definition
+2. **Dynamic handling**: Check responseMode parameter in webhook function
+3. **Different responses based on mode**:
+   - GET requests: Always return immediately (HTML interface)
+   - POST requests with responseMode='onReceived': Return workflowData
+   - POST requests with responseMode='responseNode': Return workflowData for Respond to Webhook
+
+### Implementation Plan
+1. Change webhook responseMode from expression to static value 'responseNode'
+2. In webhook function, check the actual parameter value
+3. Handle response accordingly:
+   ```typescript
+   const responseMode = this.getNodeParameter('responseMode', 'onReceived') as string;
+   
+   // For GET requests (HTML interface), always respond immediately
+   if (method === 'GET' && chatMode === 'hosted') {
+     return { webhookResponse: chatHtml };
+   }
+   
+   // For POST requests, check responseMode
+   if (responseMode === 'onReceived') {
+     // Return immediately with workflowData
+     return {
+       webhookResponse: {
+         status: 200,
+         body: output
+       }
+     };
+   } else {
+     // responseMode === 'responseNode'
+     // Return workflowData for Respond to Webhook to handle
+     return {
+       workflowData: [this.helpers.returnJsonArray([output])]
+     };
+   }
+   ```
 
 ## Next Steps
-1. Start with Phase 1: Add Chat Mode parameter
-2. Test each phase before moving to next
-3. Update documentation after each phase
-4. Git commit after each successful phase
+1. Fix webhook responseMode configuration
+2. Test with Respond to Webhook node
+3. Update documentation
+4. Git commit after successful fix
