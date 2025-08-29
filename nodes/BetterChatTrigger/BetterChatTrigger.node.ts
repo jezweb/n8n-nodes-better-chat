@@ -82,7 +82,7 @@ export class BetterChatTrigger implements INodeType {
 		],
 		eventTriggerDescription: 'Waiting for you to submit the chat',
 		activationMessage: 'You can now make calls to your production chat URL.',
-		triggerPanel: false,
+		triggerPanel: true,
 		properties: [
 			{
 				displayName: 'Make Chat Publicly Available',
@@ -207,6 +207,7 @@ export class BetterChatTrigger implements INodeType {
 				type: 'collection',
 				placeholder: 'Add UI Enhancement',
 				default: {},
+				// eslint-disable-next-line n8n-nodes-base/node-param-collection-type-unsorted-items
 				options: [
 					{
 						displayName: 'Compact Mode',
@@ -429,24 +430,24 @@ export class BetterChatTrigger implements INodeType {
 						type: 'options',
 						options: [
 							{
-								name: 'None',
-								value: 'none',
-							},
-							{
-								name: 'Small',
-								value: '0 2px 4px rgba(0,0,0,0.1)',
-							},
-							{
-								name: 'Medium',
-								value: '0 10px 30px rgba(0,0,0,0.2)',
+								name: 'Glow',
+								value: '0 0 30px rgba(102,126,234,0.3)',
 							},
 							{
 								name: 'Large',
 								value: '0 20px 60px rgba(0,0,0,0.3)',
 							},
 							{
-								name: 'Glow',
-								value: '0 0 30px rgba(102,126,234,0.3)',
+								name: 'Medium',
+								value: '0 10px 30px rgba(0,0,0,0.2)',
+							},
+							{
+								name: 'None',
+								value: 'none',
+							},
+							{
+								name: 'Small',
+								value: '0 2px 4px rgba(0,0,0,0.1)',
 							},
 						],
 						default: '0 20px 60px rgba(0,0,0,0.3)',
@@ -484,7 +485,7 @@ export class BetterChatTrigger implements INodeType {
 								value: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
 							},
 							{
-								name: 'Sans-serif',
+								name: 'Sans-Serif',
 								value: '"Inter", "Helvetica Neue", Arial, sans-serif',
 							},
 							{

@@ -5,9 +5,9 @@
 
 A feature-rich chat trigger node for n8n workflows with multiple access modes including hosted chat interface, webhook endpoint, and embedded widget support. Provides native AI Agent integration, authentication, CORS configuration, and advanced UI features.
 
-## 🎉 Version 0.3.5 - Full Feature Implementation
+## 🎉 Version 0.3.17 - Test Chat Interface Support
 
-**BetterChatTrigger Node** - Now with complete UI customization! All configured features are fully functional including file uploads, color customization, syntax highlighting, and more.
+**BetterChatTrigger Node** - Now with built-in test chat interface in n8n editor! Test your workflows directly from the canvas with the integrated chat panel, plus complete UI customization including file uploads, color customization, syntax highlighting, and more.
 
 ### Migration Guide
 - **Existing users**: Your workflows will continue to work
@@ -16,7 +16,13 @@ A feature-rich chat trigger node for n8n workflows with multiple access modes in
 
 ## Features
 
-### 🚀 Chat Access Modes (New in v0.2.0!)
+### 🧪 Test Chat Interface (New in v0.3.17!)
+- **Built-in Test Panel** - Test your chat workflows directly in the n8n editor
+- **Chat Button** - Access the test interface from the workflow canvas
+- **Integrated Logs** - View AI agent logs alongside chat conversations
+- **Manual Mode** - Keep chat private during development with the public toggle
+
+### 🚀 Chat Access Modes
 - **Webhook Mode** - Basic webhook endpoint for custom integrations
 - **Hosted Chat** - Complete chat interface provided by n8n with generated URL
 - **Embedded Chat** - Compatible with @n8n/chat widget for embedding
@@ -98,21 +104,25 @@ n8n start
 
 ### Basic Setup
 
-1. **Add the Node**: Drag the "Chat UI Trigger" node from the trigger nodes panel
-2. **Choose Chat Access Mode** (v0.2.0+):
+1. **Add the Node**: Drag the "Better Chat Trigger" node from the trigger nodes panel
+2. **Test Your Workflow**: 
+   - Keep "Make Chat Publicly Available" toggle OFF during development
+   - Click the "Chat" button at the bottom of the canvas to open test interface
+   - Type messages and see responses directly in the editor
+3. **Choose Chat Access Mode**:
    - `Webhook Only`: Basic webhook endpoint
    - `Hosted Chat`: n8n provides chat interface with URL (**[See Setup Guide](HOSTED_CHAT_SETUP.md)**)
    - `Embedded Chat`: For @n8n/chat widget integration
-3. **Configure Webhook Path**: Set the path for receiving chat messages (default: `webhook`)
-4. **Choose Output Format**:
+4. **Configure Webhook Path**: Set the path for receiving chat messages (default: `webhook`)
+5. **Choose Output Format**:
    - `AI Agent Compatible`: Optimized for AI Agent nodes (default)
    - `Detailed`: Full output with all metadata
-5. **Configure Security** (for Hosted/Embedded modes):
+6. **Configure Security** (for Hosted/Embedded modes):
    - Set authentication (None/Basic Auth)
    - Configure allowed origins for CORS
    - Toggle public availability
-6. **Connect to AI Agent**: Link the output to an AI Agent node
-7. **Get Access URL**: 
+7. **Connect to AI Agent**: Link the output to an AI Agent node
+8. **Get Access URL**: 
    - For Webhook: Click "Webhook URLs"
    - For Hosted: Check the `chatUrl` in output or node UI
 
