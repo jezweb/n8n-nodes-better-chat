@@ -170,7 +170,6 @@ export class BetterChatTrigger implements INodeType {
 				displayName: 'Initial Message',
 				name: 'initialMessage',
 				type: 'string',
-				default: '',
 				default: DEFAULT_CONFIG.INITIAL_MESSAGE,
 				description: 'Welcome message shown when chat loads',
 				displayOptions: {
