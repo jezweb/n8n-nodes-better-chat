@@ -624,6 +624,7 @@ export class BetterChatTrigger implements INodeType {
 		.file-upload {
 			margin-left: 10px;
 			position: relative;
+			display: inline-block;
 		}
 		
 		.file-upload input[type="file"] {
@@ -631,16 +632,18 @@ export class BetterChatTrigger implements INodeType {
 		}
 		
 		.file-upload label {
-			display: inline-block;
-			padding: 10px;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0.5em;
 			background: var(--primary-color);
 			color: white;
 			border-radius: 50%;
 			cursor: pointer;
-			width: 40px;
-			height: 40px;
-			text-align: center;
-			line-height: 20px;
+			width: 2.5em;
+			height: 2.5em;
+			font-size: 1em;
+			transition: opacity 0.3s;
 		}
 		
 		.file-upload label:hover {
@@ -649,17 +652,18 @@ export class BetterChatTrigger implements INodeType {
 		
 		.file-indicator {
 			position: absolute;
-			top: -5px;
-			right: -5px;
+			top: -0.25em;
+			right: -0.25em;
 			background: #4CAF50;
 			color: white;
 			border-radius: 50%;
-			width: 20px;
-			height: 20px;
-			font-size: 12px;
+			width: 1.2em;
+			height: 1.2em;
+			font-size: 0.75em;
 			display: flex;
 			align-items: center;
 			justify-content: center;
+			font-weight: bold;
 		}
 		
 		/* Copy button styles */
@@ -761,8 +765,15 @@ export class BetterChatTrigger implements INodeType {
 			const file = event.target.files[0];
 			if (file) {
 				selectedFile = file;
-				document.getElementById('fileIndicator').style.display = 'flex';
-				document.getElementById('fileIndicator').textContent = '1';
+				const indicator = document.getElementById('fileIndicator');
+				const label = document.querySelector('.file-upload label');
+				
+				// Show indicator
+				indicator.style.display = 'flex';
+				indicator.textContent = '1';
+				
+				// Update tooltip with file name
+				label.title = 'File: ' + file.name;
 			}
 		}
 		
@@ -807,6 +818,7 @@ export class BetterChatTrigger implements INodeType {
 					selectedFile = null;
 					document.getElementById('fileInput').value = '';
 					document.getElementById('fileIndicator').style.display = 'none';
+					document.querySelector('.file-upload label').title = 'Attach file';
 				} catch (error) {
 					console.error('Error reading file:', error);
 				}
@@ -944,6 +956,9 @@ export class BetterChatTrigger implements INodeType {
 			const sessionId = bodyData.sessionId || bodyData.session_id || `session_${Date.now()}`;
 			const threadId = bodyData.threadId || bodyData.thread_id || `thread_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 			
+			// Extract files from request
+			const files = bodyData.files || [];
+			
 			// Build conversation context
 			let messages = [...previousMessages];
 			
@@ -997,6 +1012,11 @@ export class BetterChatTrigger implements INodeType {
 					timestamp: new Date().toISOString(),
 				};
 				
+				// Add files if present
+				if (files.length > 0) {
+					output.files = files;
+				}
+				
 				if (chatUrl) {
 					output.chatUrl = chatUrl;
 				}
@@ -1008,6 +1028,7 @@ export class BetterChatTrigger implements INodeType {
 					userMessage,
 					sessionId,
 					threadId,
+					files: files.length > 0 ? files : undefined,
 					chatMode: mode,
 					chatUrl: chatUrl || undefined,
 					publicAvailable,

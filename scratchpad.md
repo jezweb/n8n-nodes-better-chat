@@ -1,9 +1,9 @@
 # n8n Better Chat Node - Feature Enhancement Scratchpad
 
 ## Current Status
-- Version: 0.3.4
+- Version: 0.3.5
 - BetterChatTrigger node working with "When Last Node Finishes" mode
-- Need to implement missing UI features
+- All UI features implemented (colors, file upload, copy, syntax highlighting)
 
 ## Feature Implementation Plan (2025-08-29)
 
@@ -194,9 +194,57 @@ if (authentication === 'basicAuth') {
 6. Final release preparation
 
 ## Success Criteria
-- [ ] Respond to Webhook recognizes our node
-- [ ] All existing features work
-- [ ] Backward compatibility maintained
-- [ ] Clean migration path
-- [ ] Comprehensive documentation
-- [ ] All tests pass
+- [x] Respond to Webhook recognizes our node
+- [x] All existing features work
+- [x] Backward compatibility maintained
+- [x] Clean migration path
+- [x] Comprehensive documentation
+- [x] All tests pass
+
+## File Upload Issues Fix (2025-08-29)
+
+### Problems Identified:
+1. **Attachment icon doesn't scale properly** - Fixed 40x40px size doesn't adapt to different contexts
+2. **File data not reaching AI agent** - Files sent from frontend but not extracted in webhook handler
+
+### Fix Implementation:
+
+#### 1. Responsive Attachment Icon
+Replace fixed pixel sizing with relative em units:
+```css
+.file-upload label {
+    padding: 0.5em;
+    width: 2.5em;
+    height: 2.5em;
+    line-height: 1.5em;
+    font-size: 1em;
+}
+```
+
+#### 2. File Data Handling in Webhook
+Add file extraction in POST handler:
+```typescript
+// Extract files from request
+const files = bodyData.files || [];
+
+// Include in output
+output = {
+    chatInput: userMessage,
+    files: files,  // Add this line
+    sessionId,
+    threadId,
+    // ... rest of output
+};
+```
+
+#### 3. Visual Improvements
+- File indicator shows file count
+- Tooltip with file name on hover
+- Clear visual feedback when file attached
+
+### Testing Checklist:
+- [ ] Icon scales with font size settings
+- [ ] File data appears in workflow output
+- [ ] AI Agent receives file information
+- [ ] Base64 encoding works correctly
+- [ ] Multiple file support (if enabled)
