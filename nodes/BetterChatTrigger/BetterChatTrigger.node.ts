@@ -1383,46 +1383,77 @@ export class BetterChatTrigger implements INodeType {
 			
 			// Add binary data if files are present
 			if (files.length > 0) {
-				const binary: any = {};
-				
-				files.forEach((file: any, index: number) => {
-					const binaryPropertyName = `data${index}`;
+				try {
+					const binary: any = {};
 					
-					// File data should already be pure base64 from frontend
-					// But handle both cases for compatibility
-					let base64Data = file.data;
-					if (typeof file.data === 'string' && file.data.startsWith('data:')) {
-						// Legacy: Extract base64 from data URL if needed
-						const parts = file.data.split(',');
-						base64Data = parts[1] || file.data;
+					files.forEach((file: any, index: number) => {
+						try {
+							const binaryPropertyName = `data${index}`;
+							
+							// Validate file object structure
+							if (!file || !file.data) {
+								console.error(`Invalid file object at index ${index}:`, file);
+								return; // Skip this file
+							}
+							
+							// File data should already be pure base64 from frontend
+							// But handle both cases for compatibility
+							let base64Data = file.data;
+							if (typeof file.data === 'string' && file.data.startsWith('data:')) {
+								// Legacy: Extract base64 from data URL if needed
+								const parts = file.data.split(',');
+								base64Data = parts[1] || file.data;
+							}
+							
+							// Validate base64 data
+							if (!base64Data || typeof base64Data !== 'string') {
+								console.error(`Invalid base64 data for file ${file.name}`);
+								return; // Skip this file
+							}
+							
+							// Convert base64 to Buffer with error handling
+							let buffer: Buffer;
+							try {
+								buffer = Buffer.from(base64Data, 'base64');
+							} catch (bufferError) {
+								console.error(`Error converting base64 to buffer for file ${file.name}:`, bufferError);
+								return; // Skip this file
+							}
+							
+							// Add to binary object in n8n standard format
+							binary[binaryPropertyName] = {
+								data: buffer,
+								fileName: file.name || `file_${index}`,
+								mimeType: file.type || 'application/octet-stream',
+								fileSize: buffer.length,
+							};
+							
+							// Also keep reference in JSON for backward compatibility
+							if (!returnData.json.binaryPropertyNames) {
+								returnData.json.binaryPropertyNames = [];
+							}
+							returnData.json.binaryPropertyNames.push(binaryPropertyName);
+						} catch (fileError) {
+							console.error(`Error processing file at index ${index}:`, fileError);
+							// Continue with next file
+						}
+					});
+					
+					// Only add binary property if we successfully processed at least one file
+					if (Object.keys(binary).length > 0) {
+						returnData.binary = binary;
 					}
-					
-					// Convert base64 to Buffer
-					const buffer = Buffer.from(base64Data, 'base64');
-					
-					// Add to binary object in n8n standard format
-					binary[binaryPropertyName] = {
-						data: buffer,
-						fileName: file.name,
-						mimeType: file.type || 'application/octet-stream',
-						fileSize: buffer.length,
-					};
-					
-					// Also keep reference in JSON for backward compatibility
-					if (!returnData.json.binaryPropertyNames) {
-						returnData.json.binaryPropertyNames = [];
-					}
-					returnData.json.binaryPropertyNames.push(binaryPropertyName);
-				});
-				
-				returnData.binary = binary;
+				} catch (error) {
+					console.error('Error processing files:', error);
+					// Continue without binary data rather than crashing
+				}
 			}
 			
 			// Always return workflowData to let the workflow continue
 			// This ensures compatibility with both lastNode and responseNode modes
 			return {
 				workflowData: [
-					[returnData],  // n8n expects array of arrays, where inner array contains data items
+					returnData,  // Single level array for proper binary data handling
 				],
 			};
 		}
