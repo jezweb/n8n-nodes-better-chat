@@ -961,14 +961,20 @@ export class BetterChatTrigger implements INodeType {
 			
 			// Add copy button if enabled
 			${features.includes('copy') ? 
-			`html += '<button class="copy-button" data-message-content="">📋</button>';
-			// Store content in data attribute safely
-			messageDiv.querySelector('.copy-button').setAttribute('data-message-content', content);` 
+			`html += '<button class="copy-button" data-message-content="">📋</button>';` 
 			: '// No copy button'}
 			
 			messageDiv.innerHTML = html;
 			messagesDiv.appendChild(messageDiv);
 			messagesDiv.scrollTop = messagesDiv.scrollHeight;
+			
+			// Store content in data attribute after HTML is set
+			${features.includes('copy') ? 
+			`const copyBtn = messageDiv.querySelector('.copy-button');
+			if (copyBtn) {
+				copyBtn.setAttribute('data-message-content', content);
+			}` 
+			: '// No copy button data'}
 			
 			// Apply syntax highlighting if needed
 			${features.includes('codeHighlight') ? 
