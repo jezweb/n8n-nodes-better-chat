@@ -5,9 +5,9 @@
 
 A feature-rich chat trigger node for n8n workflows with multiple access modes including hosted chat interface, webhook endpoint, and embedded widget support. Provides native AI Agent integration, authentication, CORS configuration, and advanced UI features.
 
-## 🎉 Version 0.3.4 - Simplified Response Mode
+## 🎉 Version 0.3.5 - Full Feature Implementation
 
-**BetterChatTrigger Node** - Now streamlined to use "When Last Node Finishes" response mode, which provides the best compatibility and performance. The node continues to support all our enhanced UI features.
+**BetterChatTrigger Node** - Now with complete UI customization! All configured features are fully functional including file uploads, color customization, syntax highlighting, and more.
 
 ### Migration Guide
 - **Existing users**: Your workflows will continue to work
@@ -29,8 +29,10 @@ A feature-rich chat trigger node for n8n workflows with multiple access modes in
 
 ### 🎨 Rich User Interface
 - **Markdown Rendering** - Full Markdown support for formatted messages
-- **Code Highlighting** - Syntax highlighting for multiple programming languages
+- **Code Highlighting** - Syntax highlighting with Prism.js for multiple languages
 - **Theme Support** - Light, dark, and auto themes
+- **Custom Colors** - Full color customization for all UI elements
+- **Adjustable Size** - Control width and font size
 - **Responsive Design** - Adapts to different screen sizes
 - **Custom Welcome Message** - Configure initial greeting
 
@@ -184,9 +186,16 @@ The node uses "When Last Node Finishes" response mode for optimal performance.
 
 ### UI Settings
 - **Theme**: Light, Dark, or Auto
-- **Font Size**: Small, Medium, or Large
+- **Width**: Customizable container width (px, %, or auto)
+- **Font Size**: Small, Medium, Large, or Extra Large
 - **Max Height**: Container height in pixels
-- **Show Avatars**: Display user/assistant avatars
+- **Custom Colors**: 
+  - Primary Color
+  - Background Color
+  - Container Background
+  - User Message Color
+  - Assistant Message Color
+  - Text Color
 - **Compact Mode**: Reduced message spacing
 
 ### File Settings

@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.5] - 2025-08-29
+
+### Added
+- Full color customization for all UI elements (primary, background, container, messages, text)
+- Width control for chat container (supports px, %, auto)
+- Font size options (Small, Medium, Large, Extra Large)
+- File upload UI with base64 encoding support
+- Copy button on messages with visual feedback
+- Syntax highlighting with Prism.js for code blocks
+- Support for JavaScript, Python, JSON syntax highlighting
+
+### Enhanced
+- CSS variables now use custom colors when configured
+- File upload accepts configurable MIME types
+- Copy functionality strips HTML tags for clean text
+- Improved visual feedback for user interactions
+
+### Fixed
+- All configured features now have working implementations
+- File upload UI properly shows/hides based on configuration
+- Copy button positioning and functionality
+
 ## [0.3.4] - 2025-08-29
 
 ### Changed

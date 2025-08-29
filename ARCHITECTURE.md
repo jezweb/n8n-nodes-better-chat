@@ -3,12 +3,28 @@
 ## Overview
 The n8n Better Chat Node provides two webhook trigger nodes for sophisticated chat interfaces in n8n workflows. Version 0.3.0 introduces BetterChatTrigger, which is fully compatible with n8n's Respond to Webhook node while maintaining all custom UI enhancements.
 
-## Version 0.3.0 - Major Architecture Update
+## Version 0.3.5 - Full Feature Implementation
 
-### Key Architectural Change
-The project now includes two nodes:
+### Key Features Now Implemented
+1. **Complete UI Customization**
+   - Full color control via CSS variables
+   - Width and font size configuration
+   - Theme support with custom overrides
+
+2. **File Upload System**
+   - Base64 encoding for file data
+   - MIME type filtering
+   - Visual indicators for selected files
+
+3. **Enhanced Content Display**
+   - Syntax highlighting with Prism.js
+   - Copy buttons with visual feedback
+   - Markdown rendering improvements
+
+### Architecture Components
+The project includes two nodes:
 1. **MinimalWebhook** - Original implementation (backward compatibility)
-2. **BetterChatTrigger** - New node based on official Chat Trigger pattern (Respond to Webhook compatible)
+2. **BetterChatTrigger** - Full-featured node with all UI enhancements
 
 ### Why Two Nodes?
 - **MinimalWebhook**: Preserves backward compatibility for existing workflows
