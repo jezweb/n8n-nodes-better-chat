@@ -485,6 +485,64 @@ Apply to:
 - Keep all file data in binary property only
 - Avoid any complex structures in JSON output
 
+## Comprehensive Escaping Solution (v0.3.22) ✅
+
+### Final Fix Implementation
+**Root Cause**: ANY string field in the output could contain curly braces that break AI Agent template parsing - not just user messages, but also sessionId, threadId, chatUrl, headers, file names, etc.
+
+**Solution**: Apply escaping to the ENTIRE output object instead of individual fields.
+
+### Implementation Details ✅
+```typescript
+// CRITICAL: Escape ALL curly braces in the entire output object
+// This prevents AI Agent template parsing errors from ANY string field
+// Must be done after output is fully constructed but before returning
+output = escapeBraces(output);
+
+// Convert files to n8n binary format if present
+const returnData: any = {
+    json: output,
+};
+```
+
+### Enhanced escapeBraces Function ✅
+```typescript
+// This function recursively escapes all string values in nested objects/arrays
+function escapeBraces(value: any): any {
+    if (typeof value === 'string') {
+        // Replace single braces with double braces for AI Agent compatibility
+        return value.replace(/{/g, '{{').replace(/}/g, '}}');
+    }
+    if (Array.isArray(value)) {
+        return value.map(escapeBraces);
+    }
+    if (value && typeof value === 'object') {
+        const escaped: any = {};
+        for (const key in value) {
+            if (value.hasOwnProperty(key)) {
+                escaped[key] = escapeBraces(value[key]);
+            }
+        }
+        return escaped;
+    }
+    return value;
+}
+```
+
+### Key Benefits ✅
+1. **Comprehensive Coverage**: ALL string fields are escaped automatically
+2. **Future Proof**: New fields added later will be escaped without code changes
+3. **Deep Object Support**: Handles nested objects and arrays recursively
+4. **Single Point of Control**: All escaping logic in one place
+5. **Performance**: Only one pass through the data structure
+
+### Testing Results ✅
+- [x] Published as v0.3.22
+- [x] Build and lint successful
+- [x] Comprehensive escaping applied to entire output
+- [x] No manual field-by-field escaping needed
+- [x] Ready for user testing
+
 ### Proposed Enhancements:
 
 #### 1. Responsive Dimensions ✨
