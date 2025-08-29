@@ -292,6 +292,53 @@ return {
 - [x] Multiple file support (if enabled)
 - [x] Binary data appears in Binary tab of connected nodes
 
+## File Upload Template Error Investigation (2025-08-29 Update)
+
+### Problem Still Persists in v0.3.14
+Despite previous fixes, the "Single '}' in template" error still occurs when uploading files.
+
+### Root Causes Identified:
+1. **Frontend sends data URLs with special characters**
+   - `fileToBase64()` uses `readAsDataURL()` which creates: `data:image/png;base64,iVBORw0...`
+   - Characters like `:`, `;`, `/` break template parsing in AI Agent
+
+2. **Raw body data leakage**
+   - Line 1169: `body: bodyData` includes the full file data in detailed output
+   - Even though we removed files from main output, it still reaches AI Agent via `raw.body.files`
+
+3. **Backend still receives data URLs**
+   - We extract base64 on backend, but frontend should send pure base64
+
+### Required Fixes:
+1. **Frontend**: Change `fileToBase64` to send pure base64:
+   ```javascript
+   function fileToBase64(file) {
+       return new Promise((resolve, reject) => {
+           const reader = new FileReader();
+           reader.onload = () => {
+               const dataUrl = reader.result;
+               const base64 = dataUrl.split(',')[1]; // Extract pure base64
+               resolve(base64);
+           };
+           reader.onerror = reject;
+           reader.readAsDataURL(file);
+       });
+   }
+   ```
+
+2. **Backend**: Clean raw body data before including:
+   ```javascript
+   const cleanBodyData = { ...bodyData };
+   if (cleanBodyData.files) {
+       cleanBodyData.files = cleanBodyData.files.map(f => ({
+           name: f.name,
+           type: f.type,
+           size: f.size
+           // data removed
+       }));
+   }
+   ```
+
 ## Open Chat Button & Binary Structure Fix (2025-08-29)
 
 ### Issues Identified:

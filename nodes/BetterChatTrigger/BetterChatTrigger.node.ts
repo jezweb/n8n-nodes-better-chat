@@ -864,7 +864,12 @@ export class BetterChatTrigger implements INodeType {
 		function fileToBase64(file) {
 			return new Promise((resolve, reject) => {
 				const reader = new FileReader();
-				reader.onload = () => resolve(reader.result);
+				reader.onload = () => {
+					// Extract pure base64 from data URL to avoid special characters
+					const dataUrl = reader.result;
+					const base64 = dataUrl.split(',')[1];
+					resolve(base64);
+				};
 				reader.onerror = reject;
 				reader.readAsDataURL(file);
 			});
@@ -1171,7 +1176,20 @@ export class BetterChatTrigger implements INodeType {
 					raw: {
 						headers,
 						query,
-						body: bodyData,
+						body: (() => {
+							// Clean body data to remove file content that breaks templates
+							const cleanBody = { ...bodyData };
+							if (cleanBody.files && Array.isArray(cleanBody.files)) {
+								// Keep file metadata but remove actual data
+								cleanBody.files = cleanBody.files.map((f: any) => ({
+									name: f.name,
+									type: f.type,
+									size: f.size,
+									// data field removed to prevent template errors
+								}));
+							}
+							return cleanBody;
+						})(),
 					},
 				};
 			}
@@ -1188,10 +1206,11 @@ export class BetterChatTrigger implements INodeType {
 				files.forEach((file: any, index: number) => {
 					const binaryPropertyName = `data${index}`;
 					
-					// Extract base64 from data URL (format: data:image/png;base64,iVBORw0KGgo...)
+					// File data should already be pure base64 from frontend
+					// But handle both cases for compatibility
 					let base64Data = file.data;
-					if (file.data.startsWith('data:')) {
-						// Split on comma to get pure base64 after the data URL prefix
+					if (typeof file.data === 'string' && file.data.startsWith('data:')) {
+						// Legacy: Extract base64 from data URL if needed
 						const parts = file.data.split(',');
 						base64Data = parts[1] || file.data;
 					}
