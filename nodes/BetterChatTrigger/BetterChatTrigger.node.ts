@@ -167,6 +167,11 @@ export class BetterChatTrigger implements INodeType {
 								value: 'lastNode',
 								description: 'Returns data of the last-executed node',
 							},
+							{
+								name: "Using 'Respond to Webhook' Node",
+								value: 'responseNode',
+								description: 'Response defined in Respond to Webhook node',
+							},
 						],
 						default: 'lastNode',
 						description: 'When and how to respond to the webhook',
@@ -350,6 +355,20 @@ export class BetterChatTrigger implements INodeType {
 						description: 'Maximum height of the chat container (e.g., 600px, 90vh)',
 					},
 					{
+						displayName: 'Max Width',
+						name: 'maxWidth',
+						type: 'string',
+						default: '800px',
+						description: 'Maximum width on large screens (e.g., 800px, 90%)',
+					},
+					{
+						displayName: 'Min Width',
+						name: 'minWidth',
+						type: 'string',
+						default: '320px',
+						description: 'Minimum width to maintain usability (e.g., 320px)',
+					},
+					{
 						displayName: 'Output Format',
 						name: 'outputFormat',
 						type: 'options',
@@ -395,20 +414,6 @@ export class BetterChatTrigger implements INodeType {
 						type: 'string',
 						default: '100%',
 						description: 'Width of the chat container (e.g., 600px, 80%, 100vw)',
-					},
-					{
-						displayName: 'Max Width',
-						name: 'maxWidth',
-						type: 'string',
-						default: '800px',
-						description: 'Maximum width on large screens (e.g., 800px, 90%)',
-					},
-					{
-						displayName: 'Min Width',
-						name: 'minWidth',
-						type: 'string',
-						default: '320px',
-						description: 'Minimum width to maintain usability (e.g., 320px)',
 					},
 				],
 			},
@@ -1165,7 +1170,7 @@ export class BetterChatTrigger implements INodeType {
 			// This ensures compatibility with both lastNode and responseNode modes
 			return {
 				workflowData: [
-					returnData,  // Fixed: removed double nesting that was causing AI Agent errors
+					[returnData],  // n8n expects array of arrays, where inner array contains data items
 				],
 			};
 		}
