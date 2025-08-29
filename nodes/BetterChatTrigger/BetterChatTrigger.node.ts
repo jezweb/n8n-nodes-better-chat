@@ -167,11 +167,6 @@ export class BetterChatTrigger implements INodeType {
 								value: 'lastNode',
 								description: 'Returns data of the last-executed node',
 							},
-							{
-								name: "Using 'Respond to Webhook' Node",
-								value: 'responseNode',
-								description: 'Response defined in that node',
-							},
 						],
 						default: 'lastNode',
 						description: 'When and how to respond to the webhook',
@@ -310,6 +305,90 @@ export class BetterChatTrigger implements INodeType {
 						default: 'auto',
 						description: 'Color theme for the chat interface',
 					},
+					{
+						displayName: 'Width',
+						name: 'width',
+						type: 'string',
+						default: '600px',
+						description: 'Width of the chat container (e.g., 600px, 80%, 100%)',
+					},
+					{
+						displayName: 'Font Size',
+						name: 'fontSize',
+						type: 'options',
+						options: [
+							{
+								name: 'Small',
+								value: 'small',
+							},
+							{
+								name: 'Medium',
+								value: 'medium',
+							},
+							{
+								name: 'Large',
+								value: 'large',
+							},
+							{
+								name: 'Extra Large',
+								value: 'xlarge',
+							},
+						],
+						default: 'medium',
+						description: 'Base font size for chat interface',
+					},
+					{
+						displayName: 'Custom Colors',
+						name: 'customColors',
+						type: 'collection',
+						placeholder: 'Add Color',
+						default: {},
+						description: 'Customize chat interface colors',
+						options: [
+							{
+								displayName: 'Primary Color',
+								name: 'primaryColor',
+								type: 'color',
+								default: '#667eea',
+								description: 'Primary accent color',
+							},
+							{
+								displayName: 'Background Color',
+								name: 'backgroundColor',
+								type: 'color',
+								default: '#f5f5f5',
+								description: 'Page background color',
+							},
+							{
+								displayName: 'Container Background',
+								name: 'containerBackground',
+								type: 'color',
+								default: '#ffffff',
+								description: 'Chat container background',
+							},
+							{
+								displayName: 'User Message Color',
+								name: 'userMessageColor',
+								type: 'color',
+								default: '#e3f2fd',
+								description: 'Background color for user messages',
+							},
+							{
+								displayName: 'Assistant Message Color',
+								name: 'assistantMessageColor',
+								type: 'color',
+								default: '#f3e5f5',
+								description: 'Background color for assistant messages',
+							},
+							{
+								displayName: 'Text Color',
+								name: 'textColor',
+								type: 'color',
+								default: '#333333',
+								description: 'Main text color',
+							},
+						],
+					},
 				],
 			},
 		],
@@ -332,7 +411,8 @@ export class BetterChatTrigger implements INodeType {
 		// Get options
 		const options = this.getNodeParameter('options', {}) as IDataObject;
 		const allowedOrigins = (options.allowedOrigins as string) || '*';
-		// const allowFileUploads = (options.allowFileUploads as boolean) || false; // Reserved for future file upload implementation
+		const allowFileUploads = (options.allowFileUploads as boolean) || false;
+		const allowedFilesMimeTypes = (options.allowedFilesMimeTypes as string) || '*';
 		
 		// Get UI enhancements
 		const uiEnhancements = this.getNodeParameter('uiEnhancements', {}) as IDataObject;
@@ -342,6 +422,9 @@ export class BetterChatTrigger implements INodeType {
 		const theme = (uiEnhancements.theme as string) || 'auto';
 		const compactMode = (uiEnhancements.compactMode as boolean) || false;
 		const maxHeight = (uiEnhancements.maxHeight as number) || 600;
+		const width = (uiEnhancements.width as string) || '600px';
+		const fontSize = (uiEnhancements.fontSize as string) || 'medium';
+		const customColors = (uiEnhancements.customColors as IDataObject) || {};
 		
 		// Handle authentication
 		if (authentication === 'basicAuth') {
@@ -396,15 +479,18 @@ export class BetterChatTrigger implements INodeType {
 	<title>Better Chat Interface</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
 	<style>
 		:root {
-			--primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-			--bg-color: ${theme === 'dark' ? '#1a1a1a' : '#f5f5f5'};
-			--container-bg: ${theme === 'dark' ? '#2d2d2d' : 'white'};
-			--text-color: ${theme === 'dark' ? '#e0e0e0' : '#333'};
-			--user-msg-bg: ${theme === 'dark' ? '#4a5568' : '#e3f2fd'};
-			--assistant-msg-bg: ${theme === 'dark' ? '#553c69' : '#f3e5f5'};
+			--primary-color: ${customColors.primaryColor || '#667eea'};
+			--primary-gradient: linear-gradient(135deg, ${customColors.primaryColor || '#667eea'} 0%, ${customColors.primaryColor || '#764ba2'} 100%);
+			--bg-color: ${customColors.backgroundColor || (theme === 'dark' ? '#1a1a1a' : '#f5f5f5')};
+			--container-bg: ${customColors.containerBackground || (theme === 'dark' ? '#2d2d2d' : 'white')};
+			--text-color: ${customColors.textColor || (theme === 'dark' ? '#e0e0e0' : '#333')};
+			--user-msg-bg: ${customColors.userMessageColor || (theme === 'dark' ? '#4a5568' : '#e3f2fd')};
+			--assistant-msg-bg: ${customColors.assistantMessageColor || (theme === 'dark' ? '#553c69' : '#f3e5f5')};
 			--border-color: ${theme === 'dark' ? '#444' : '#e0e0e0'};
+			--font-size-base: ${fontSize === 'small' ? '12px' : fontSize === 'medium' ? '14px' : fontSize === 'large' ? '16px' : '18px'};
 		}
 		
 		body { 
@@ -416,6 +502,7 @@ export class BetterChatTrigger implements INodeType {
 			display: flex;
 			justify-content: center;
 			align-items: center;
+			font-size: var(--font-size-base);
 		}
 		
 		.chat-container {
@@ -423,7 +510,7 @@ export class BetterChatTrigger implements INodeType {
 			border-radius: 10px;
 			box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 			width: 100%;
-			max-width: 600px;
+			max-width: ${width};
 			height: ${maxHeight}px;
 			display: flex;
 			flex-direction: column;
@@ -459,6 +546,7 @@ export class BetterChatTrigger implements INodeType {
 			padding: ${compactMode ? '8px 12px' : '10px 15px'};
 			border-radius: 10px;
 			animation: fadeIn 0.3s ease-in;
+			position: relative;
 		}
 		
 		.message.user {
@@ -532,6 +620,76 @@ export class BetterChatTrigger implements INodeType {
 			cursor: not-allowed;
 		}
 		
+		/* File upload styles */
+		.file-upload {
+			margin-left: 10px;
+			position: relative;
+		}
+		
+		.file-upload input[type="file"] {
+			display: none;
+		}
+		
+		.file-upload label {
+			display: inline-block;
+			padding: 10px;
+			background: var(--primary-color);
+			color: white;
+			border-radius: 50%;
+			cursor: pointer;
+			width: 40px;
+			height: 40px;
+			text-align: center;
+			line-height: 20px;
+		}
+		
+		.file-upload label:hover {
+			opacity: 0.8;
+		}
+		
+		.file-indicator {
+			position: absolute;
+			top: -5px;
+			right: -5px;
+			background: #4CAF50;
+			color: white;
+			border-radius: 50%;
+			width: 20px;
+			height: 20px;
+			font-size: 12px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+		
+		/* Copy button styles */
+		.copy-button {
+			position: absolute;
+			top: 5px;
+			right: 5px;
+			background: rgba(0,0,0,0.1);
+			border: none;
+			border-radius: 3px;
+			padding: 5px 8px;
+			cursor: pointer;
+			font-size: 12px;
+			opacity: 0;
+			transition: opacity 0.3s;
+		}
+		
+		.message:hover .copy-button {
+			opacity: 1;
+		}
+		
+		.copy-button:hover {
+			background: rgba(0,0,0,0.2);
+		}
+		
+		.copy-button.copied {
+			background: #4CAF50;
+			color: white;
+		}
+		
 		@keyframes fadeIn {
 			from { opacity: 0; transform: translateY(10px); }
 			to { opacity: 1; transform: translateY(0); }
@@ -579,15 +737,45 @@ export class BetterChatTrigger implements INodeType {
 		</div>
 		<div class="chat-input">
 			<input type="text" id="messageInput" placeholder="Type your message..." autofocus>
+			${allowFileUploads ? `
+			<div class="file-upload">
+				<input type="file" id="fileInput" accept="${allowedFilesMimeTypes}" onchange="handleFileSelect(event)">
+				<label for="fileInput" title="Attach file">📎</label>
+				<span class="file-indicator" id="fileIndicator" style="display: none;">1</span>
+			</div>
+			` : ''}
 			<button id="sendBtn" onclick="sendMessage()">Send</button>
 		</div>
 	</div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
 	<script>
 		const webhookUrl = window.location.href.replace('/chat', '/chat');
 		const messages = [];
 		let sending = false;
+		let selectedFile = null;
 		
-		function sendMessage() {
+		function handleFileSelect(event) {
+			const file = event.target.files[0];
+			if (file) {
+				selectedFile = file;
+				document.getElementById('fileIndicator').style.display = 'flex';
+				document.getElementById('fileIndicator').textContent = '1';
+			}
+		}
+		
+		function fileToBase64(file) {
+			return new Promise((resolve, reject) => {
+				const reader = new FileReader();
+				reader.onload = () => resolve(reader.result);
+				reader.onerror = reject;
+				reader.readAsDataURL(file);
+			});
+		}
+		
+		async function sendMessage() {
 			if (sending) return;
 			
 			const input = document.getElementById('messageInput');
@@ -604,17 +792,43 @@ export class BetterChatTrigger implements INodeType {
 			// Clear input
 			input.value = '';
 			
+			// Handle file if selected
+			let fileData = null;
+			if (selectedFile) {
+				try {
+					const base64 = await fileToBase64(selectedFile);
+					fileData = {
+						name: selectedFile.name,
+						type: selectedFile.type,
+						size: selectedFile.size,
+						data: base64
+					};
+					// Clear file selection
+					selectedFile = null;
+					document.getElementById('fileInput').value = '';
+					document.getElementById('fileIndicator').style.display = 'none';
+				} catch (error) {
+					console.error('Error reading file:', error);
+				}
+			}
+			
 			// Send to webhook
+			const payload = {
+				message: message,
+				messages: messages,
+				sessionId: sessionStorage.getItem('chatSessionId') || generateSessionId()
+			};
+			
+			if (fileData) {
+				payload.files = [fileData];
+			}
+			
 			fetch(webhookUrl, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({
-					message: message,
-					messages: messages,
-					sessionId: sessionStorage.getItem('chatSessionId') || generateSessionId()
-				})
+				body: JSON.stringify(payload)
 			})
 			.then(response => response.json())
 			.then(data => {
@@ -656,16 +870,40 @@ export class BetterChatTrigger implements INodeType {
 			`html += '<div class="message-timestamp">' + new Date().toLocaleTimeString() + '</div>';` 
 			: '// No timestamps'}
 			
-			// Add copy button for assistant messages if enabled
+			// Add copy button if enabled
 			${features.includes('copy') ? 
-			`if (role === 'assistant') {
-				html += '<div class="message-actions"><button class="copy-btn" onclick="copyMessage(this)">Copy</button></div>';
-			}` 
+			`html += '<button class="copy-button" onclick="copyToClipboard(this, \\'' + content.replace(/'/g, "\\\\'") + '\\')">📋</button>';` 
 			: '// No copy button'}
 			
 			messageDiv.innerHTML = html;
 			messagesDiv.appendChild(messageDiv);
 			messagesDiv.scrollTop = messagesDiv.scrollHeight;
+			
+			// Apply syntax highlighting if needed
+			${features.includes('codeHighlight') ? 
+			`if (messageDiv.querySelectorAll('pre code').length > 0) {
+				Prism.highlightAllUnder(messageDiv);
+			}` 
+			: '// No syntax highlighting'}
+		}
+		
+		function copyToClipboard(button, text) {
+			// Create a temporary textarea to copy from
+			const temp = document.createElement('textarea');
+			temp.value = text.replace(/<[^>]*>/g, ''); // Strip HTML tags
+			document.body.appendChild(temp);
+			temp.select();
+			document.execCommand('copy');
+			document.body.removeChild(temp);
+			
+			// Update button to show copied
+			const originalText = button.textContent;
+			button.textContent = '✓';
+			button.classList.add('copied');
+			setTimeout(() => {
+				button.textContent = originalText;
+				button.classList.remove('copied');
+			}, 2000);
 		}
 		
 		function copyMessage(btn) {

@@ -5,14 +5,14 @@
 
 A feature-rich chat trigger node for n8n workflows with multiple access modes including hosted chat interface, webhook endpoint, and embedded widget support. Provides native AI Agent integration, authentication, CORS configuration, and advanced UI features.
 
-## 🎉 Version 0.3.0 - Major Update!
+## 🎉 Version 0.3.4 - Simplified Response Mode
 
-**NEW: BetterChatTrigger Node** - Fully compatible with n8n's Respond to Webhook node! Based on the official n8n Chat Trigger architecture, this new node provides all our enhanced features while maintaining complete compatibility with n8n's response system.
+**BetterChatTrigger Node** - Now streamlined to use "When Last Node Finishes" response mode, which provides the best compatibility and performance. The node continues to support all our enhanced UI features.
 
 ### Migration Guide
-- **Existing users**: Your MinimalWebhook node workflows will continue to work
-- **For Respond to Webhook compatibility**: Use the new BetterChatTrigger node
-- **All features preserved**: Every enhancement is available in the new node
+- **Existing users**: Your workflows will continue to work
+- **Response Mode**: Uses "When Last Node Finishes" for reliable operation
+- **All features preserved**: Every enhancement is available
 
 ## Features
 
@@ -118,30 +118,26 @@ n8n start
 
 #### Hosted Chat Interface (v0.2.0+)
 ```
-[Chat UI Trigger] → [AI Agent] → [Respond to Webhook]
+[Better Chat Trigger] → [AI Agent]
 ```
-**Important:** Hosted Chat requires a "Respond to Webhook" node. [See full setup guide](HOSTED_CHAT_SETUP.md)
+The node uses "When Last Node Finishes" response mode for optimal performance.
 
 #### Simple Webhook Integration
 ```
-[Chat UI Trigger] → [AI Agent] → [Respond to Webhook]
+[Better Chat Trigger] → [AI Agent]
      ↓                   ↑
   chatInput         {{ $json.chatInput }}
 ```
 
 #### Chat with Memory
 ```
-[Chat UI Trigger] → [AI Agent] ← [Window Buffer Memory]
-                        ↓
-                  [Respond to Webhook]
+[Better Chat Trigger] → [AI Agent] ← [Window Buffer Memory]
 ```
 
 #### Embedded Widget (@n8n/chat)
 ```
-[@n8n/chat Widget] → [Chat UI Trigger] → [AI Agent]
-   (CORS enabled)            ↓
-                     [Respond to Webhook]
-```
+[@n8n/chat Widget] → [Better Chat Trigger] → [AI Agent]
+   (CORS enabled)
 
 ## Configuration Options
 

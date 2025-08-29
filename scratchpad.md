@@ -1,66 +1,78 @@
 # n8n Better Chat Node - Feature Enhancement Scratchpad
 
 ## Current Status
-- Version: 0.2.5
-- Multiple attempts to fix Respond to Webhook compatibility failed
-- Root cause: Respond to Webhook only recognizes specific node types
+- Version: 0.3.4
+- BetterChatTrigger node working with "When Last Node Finishes" mode
+- Need to implement missing UI features
 
-## Critical Discovery (2025-08-29)
+## Feature Implementation Plan (2025-08-29)
 
-### The Problem
-The Respond to Webhook node has a hardcoded list of allowed node types:
-- `n8n-nodes-base.webhook`
-- `n8n-nodes-base.formTrigger`
-- `@n8n/n8n-nodes-langchain.chatTrigger`
-- `n8n-nodes-base.wait`
+### Features Analysis
 
-Our node `n8n-nodes-better-chat.minimalWebhook` is NOT in this list.
+#### Currently Working:
+- Basic chat interface
+- Message sending/receiving
+- Theme support (dark/light/auto)
+- Compact mode
+- Markdown rendering (basic)
+- Timestamps
+- Max height setting
 
-### Solution: Clone Official Chat Trigger
+#### Missing Features to Implement:
+1. **File Upload** - Config exists but no UI
+2. **Copy Button** - For individual messages
+3. **Syntax Highlighting** - Proper code highlighting
+4. **Color Customization** - User-defined colors
+5. **Width Control** - Adjustable chat width
+6. **Font Size Control** - Adjustable text size
 
-## Implementation Plan v0.3.0
+## Implementation Plan v0.3.5
 
-### Phase 1: Setup and Analysis
-1. Download official ChatTrigger.node.ts from n8n
-2. Analyze its structure and patterns
-3. Create new node structure
+### Phase 1: Add Configuration Options
+1. Add color customization options to node properties
+2. Add width control option
+3. Add font size option
+4. Ensure file upload config is properly exposed
 
-### Phase 2: Node Creation
+### Phase 2: Update HTML Generation
+1. Add file input element when uploads enabled
+2. Add copy buttons to each message
+3. Include Prism.js CDN for syntax highlighting
+4. Apply custom colors via CSS variables
+5. Implement width control
+6. Add font size variables
+
+### Phase 3: JavaScript Implementation
+1. Handle file selection and base64 encoding
+2. Implement copy to clipboard functionality
+3. Initialize Prism.js for code highlighting
+4. Handle dynamic styling based on config
+
+### Phase 4: UI Enhancement Details
+
+#### File Upload Implementation:
+```html
+<div class="file-upload">
+  <input type="file" id="fileInput" accept="${allowedMimeTypes}">
+  <label for="fileInput">📎</label>
+</div>
 ```
-nodes/BetterChatTrigger/
-  ├── BetterChatTrigger.node.ts  # Cloned and modified
-  ├── chat.svg                    # Icon file
-  └── types.ts                    # Type definitions
+
+#### Copy Button Implementation:
+```javascript
+function copyMessage(text) {
+  navigator.clipboard.writeText(text);
+  // Show "Copied!" feedback
+}
 ```
 
-### Phase 3: Core Features to Preserve
-From official Chat Trigger:
-- Webhook configuration pattern
-- Response mode handling
-- Authentication system
-- CORS support
-- Session management
-
-### Phase 4: Custom Features to Add
-Our enhancements:
-1. **Enhanced Output Formats**
-   - AI Agent Compatible mode
-   - Detailed mode with metadata
-   
-2. **Advanced UI Settings**
-   - Theme selection (light/dark/auto)
-   - Compact mode toggle
-   - Max height configuration
-   
-3. **Message Processing Features**
-   - Markdown rendering
-   - Code highlighting
-   - Copy button
-   - Timestamps
-   
-4. **Custom Display Modes**
-   - Simple mode
-   - Rich mode with Markdown
+#### Color Variables:
+```css
+--primary-color: ${primaryColor || '#667eea'};
+--bg-color: ${backgroundColor || '#f5f5f5'};
+--user-msg-bg: ${userMessageColor || '#e3f2fd'};
+--assistant-msg-bg: ${assistantMessageColor || '#f3e5f5'};
+```
 
 ### Phase 5: Implementation Details
 

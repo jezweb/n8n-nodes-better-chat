@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.4] - 2025-08-29
+
+### Changed
+- Removed non-functional "Using 'Respond to Webhook' Node" option from Response Mode dropdown
+- Streamlined to use only "When Last Node Finishes" mode which works reliably
+- Kept Response Mode dropdown structure for potential future expansion
+
+### Documentation
+- Updated README examples to reflect the working response mode
+- Clarified that the node doesn't require Respond to Webhook for operation
+
 ## [0.3.0] - 2025-08-29
 
 ### Added
