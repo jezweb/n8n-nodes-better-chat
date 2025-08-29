@@ -838,6 +838,13 @@ export class BetterChatTrigger implements INodeType {
 		let sending = false;
 		let selectedFile = null;
 		
+		// Runtime configuration
+		const chatConfig = {
+			features: ${JSON.stringify(features)},
+			displayMode: '${displayMode}',
+			theme: '${theme}'
+		};
+		
 		function handleFileSelect(event) {
 			const file = event.target.files[0];
 			if (file) {
@@ -942,51 +949,64 @@ export class BetterChatTrigger implements INodeType {
 			messageDiv.className = 'message ' + role;
 			
 			let html = '';
+			let processedContent = content;
 			
 			// Process content based on display mode
-			${displayMode === 'rich' && features.includes('markdown') ? 
-			`content = content
-				.replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')
-				.replace(/\\*(.*?)\\*/g, '<em>$1</em>')
-				.replace(/\\\`\\\`\\\`([\\\\s\\\\S]*?)\\\`\\\`\\\`/g, '<pre><code>$1</code></pre>')
-				.replace(/\\\`(.*?)\\\`/g, '<code>$1</code>');` 
-			: '// No markdown processing'}
+			if (chatConfig.displayMode === 'rich' && chatConfig.features.includes('markdown')) {
+				processedContent = processedContent
+					.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+					.replace(/\*(.*?)\*/g, '<em>$1</em>')
+					.replace(/\`\`\`([\s\S]*?)\`\`\`/g, '<pre><code>$1</code></pre>')
+					.replace(/\`(.*?)\`/g, '<code>$1</code>');
+			}
 			
-			html += '<p>' + content + '</p>';
+			html += '<p>' + processedContent + '</p>';
 			
 			// Add timestamp if enabled
-			${features.includes('timestamps') ? 
-			`html += '<div class="message-timestamp">' + new Date().toLocaleTimeString() + '</div>';` 
-			: '// No timestamps'}
+			if (chatConfig.features.includes('timestamps')) {
+				html += '<div class="message-timestamp">' + new Date().toLocaleTimeString() + '</div>';
+			}
 			
 			// Add copy button if enabled
-			${features.includes('copy') ? 
-			`html += '<button class="copy-button" data-message-content="">📋</button>';` 
-			: '// No copy button'}
+			if (chatConfig.features.includes('copy')) {
+				html += '<button class="copy-button" data-message-content="">📋</button>';
+			}
 			
 			messageDiv.innerHTML = html;
 			messagesDiv.appendChild(messageDiv);
 			messagesDiv.scrollTop = messagesDiv.scrollHeight;
 			
 			// Store content in data attribute after HTML is set
-			${features.includes('copy') ? 
-			`const copyBtn = messageDiv.querySelector('.copy-button');
-			if (copyBtn) {
-				copyBtn.setAttribute('data-message-content', content);
-			}` 
-			: '// No copy button data'}
+			if (chatConfig.features.includes('copy')) {
+				const copyBtn = messageDiv.querySelector('.copy-button');
+				if (copyBtn) {
+					// Encode the content to safely store in attribute
+					copyBtn.setAttribute('data-message-content', btoa(encodeURIComponent(content)));
+				}
+			}
 			
 			// Apply syntax highlighting if needed
-			${features.includes('codeHighlight') ? 
-			`if (messageDiv.querySelectorAll('pre code').length > 0) {
-				Prism.highlightAllUnder(messageDiv);
-			}` 
-			: '// No syntax highlighting'}
+			if (chatConfig.features.includes('codeHighlight')) {
+				if (messageDiv.querySelectorAll('pre code').length > 0) {
+					if (typeof Prism !== 'undefined') {
+						Prism.highlightAllUnder(messageDiv);
+					}
+				}
+			}
 		}
 		
 		function copyToClipboard(button) {
-			// Get text from data attribute
-			const text = button.getAttribute('data-message-content') || '';
+			// Get text from data attribute and decode it
+			const encodedText = button.getAttribute('data-message-content') || '';
+			let text = '';
+			
+			try {
+				// Decode from base64 and URI encoding
+				text = decodeURIComponent(atob(encodedText));
+			} catch (e) {
+				// Fallback to raw text if decoding fails
+				text = encodedText;
+			}
 			
 			// Create a temporary textarea to copy from
 			const temp = document.createElement('textarea');
