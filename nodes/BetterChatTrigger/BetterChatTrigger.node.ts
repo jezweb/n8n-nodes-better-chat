@@ -336,11 +336,18 @@ export class BetterChatTrigger implements INodeType {
 						description: 'Base font size for chat interface',
 					},
 					{
-						displayName: 'Max Height (Px)',
+						displayName: 'Height',
+						name: 'height',
+						type: 'string',
+						default: '600px',
+						description: 'Height of the chat container (e.g., 600px, 80vh, 100%)',
+					},
+					{
+						displayName: 'Max Height',
 						name: 'maxHeight',
-						type: 'number',
-						default: 600,
-						description: 'Maximum height of the chat container',
+						type: 'string',
+						default: '90vh',
+						description: 'Maximum height of the chat container (e.g., 600px, 90vh)',
 					},
 					{
 						displayName: 'Output Format',
@@ -386,8 +393,22 @@ export class BetterChatTrigger implements INodeType {
 						displayName: 'Width',
 						name: 'width',
 						type: 'string',
-						default: '600px',
-						description: 'Width of the chat container (e.g., 600px, 80%, 100%)',
+						default: '100%',
+						description: 'Width of the chat container (e.g., 600px, 80%, 100vw)',
+					},
+					{
+						displayName: 'Max Width',
+						name: 'maxWidth',
+						type: 'string',
+						default: '800px',
+						description: 'Maximum width on large screens (e.g., 800px, 90%)',
+					},
+					{
+						displayName: 'Min Width',
+						name: 'minWidth',
+						type: 'string',
+						default: '320px',
+						description: 'Minimum width to maintain usability (e.g., 320px)',
 					},
 				],
 			},
@@ -421,8 +442,11 @@ export class BetterChatTrigger implements INodeType {
 		const features = (uiEnhancements.features as string[]) || ['markdown', 'timestamps'];
 		const theme = (uiEnhancements.theme as string) || 'auto';
 		const compactMode = (uiEnhancements.compactMode as boolean) || false;
-		const maxHeight = (uiEnhancements.maxHeight as number) || 600;
-		const width = (uiEnhancements.width as string) || '600px';
+		const height = (uiEnhancements.height as string) || '600px';
+		const maxHeight = (uiEnhancements.maxHeight as string) || '90vh';
+		const width = (uiEnhancements.width as string) || '100%';
+		const maxWidth = (uiEnhancements.maxWidth as string) || '800px';
+		const minWidth = (uiEnhancements.minWidth as string) || '320px';
 		const fontSize = (uiEnhancements.fontSize as string) || 'medium';
 		const customColors = (uiEnhancements.customColors as IDataObject) || {};
 		
@@ -509,9 +533,11 @@ export class BetterChatTrigger implements INodeType {
 			background: var(--container-bg);
 			border-radius: 10px;
 			box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-			width: 100%;
-			max-width: ${width};
-			height: ${maxHeight}px;
+			width: ${width};
+			max-width: ${maxWidth};
+			min-width: ${minWidth};
+			height: ${height};
+			max-height: ${maxHeight};
 			display: flex;
 			flex-direction: column;
 			color: var(--text-color);
@@ -711,6 +737,48 @@ export class BetterChatTrigger implements INodeType {
 			background: rgba(0,0,0,0.1);
 			padding: 2px 4px;
 			border-radius: 3px;
+		}
+		
+		/* Responsive Design */
+		@media (max-width: 768px) {
+			body {
+				padding: 10px;
+			}
+			
+			.chat-container {
+				width: 100%;
+				max-width: 100%;
+				height: 100vh;
+				max-height: 100vh;
+				border-radius: 0;
+			}
+			
+			.chat-header {
+				padding: 15px;
+			}
+			
+			.message {
+				max-width: 85%;
+			}
+			
+			.input-container {
+				padding: 10px;
+			}
+		}
+		
+		@media (max-width: 480px) {
+			:root {
+				--font-size-base: 14px;
+			}
+			
+			.message {
+				max-width: 90%;
+			}
+			
+			.send-btn, .file-upload label {
+				width: 2em;
+				height: 2em;
+			}
 		}
 		
 		/* Auto theme */
