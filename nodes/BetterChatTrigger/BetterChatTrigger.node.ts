@@ -639,26 +639,29 @@ export class BetterChatTrigger implements INodeType {
 			messageDiv.className = 'message ' + role;
 			
 			let html = '';
-			${displayMode === 'rich' && features.includes('markdown') ? `
-			// Simple markdown processing
-			content = content
-				.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-				.replace(/\*(.*?)\*/g, '<em>$1</em>')
-				.replace(/\`\`\`([\\s\\S]*?)\`\`\`/g, '<pre><code>$1</code></pre>')
-				.replace(/\`(.*?)\`/g, '<code>$1</code>');
-			` : ''}
+			
+			// Process content based on display mode
+			${displayMode === 'rich' && features.includes('markdown') ? 
+			`content = content
+				.replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')
+				.replace(/\\*(.*?)\\*/g, '<em>$1</em>')
+				.replace(/\\\`\\\`\\\`([\\\\s\\\\S]*?)\\\`\\\`\\\`/g, '<pre><code>$1</code></pre>')
+				.replace(/\\\`(.*?)\\\`/g, '<code>$1</code>');` 
+			: '// No markdown processing'}
 			
 			html += '<p>' + content + '</p>';
 			
-			${features.includes('timestamps') ? `
-			html += '<div class="message-timestamp">' + new Date().toLocaleTimeString() + '</div>';
-			` : ''}
+			// Add timestamp if enabled
+			${features.includes('timestamps') ? 
+			`html += '<div class="message-timestamp">' + new Date().toLocaleTimeString() + '</div>';` 
+			: '// No timestamps'}
 			
-			${features.includes('copy') ? `
-			if (role === 'assistant') {
+			// Add copy button for assistant messages if enabled
+			${features.includes('copy') ? 
+			`if (role === 'assistant') {
 				html += '<div class="message-actions"><button class="copy-btn" onclick="copyMessage(this)">Copy</button></div>';
-			}
-			` : ''}
+			}` 
+			: '// No copy button'}
 			
 			messageDiv.innerHTML = html;
 			messagesDiv.appendChild(messageDiv);
