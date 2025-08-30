@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test File Upload</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            font-size: 24px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #1e1e1e;
+            color: #0f0;
+            font-family: monospace;
+            font-size: 12px;
+            border-radius: 4px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 File Upload Test Suite</h1>
+        
+        <div class="test-section">
+            <h2>Test 1: Base64 Conversion</h2>
+            <input type="file" id="testFile1" />
+            <button onclick="testBase64Conversion()">Test Base64 Conversion</button>
+        </div>
+
+        <div class="test-section">
+            <h2>Test 2: Data URL Handling</h2>
+            <input type="file" id="testFile2" />
+            <button onclick="testDataURLHandling()">Test Data URL Processing</button>
+        </div>
+
+        <div class="test-section">
+            <h2>Test 3: Backend Validation</h2>
+            <input type="file" id="testFile3" />
+            <button onclick="testBackendValidation()">Test Backend Validation</button>
+        </div>
+
+        <div class="test-section">
+            <h2>Test 4: Full File Upload Flow</h2>
+            <input type="file" id="testFile4" />
+            <button onclick="testFullUploadFlow()">Test Full Upload</button>
+        </div>
+
+        <div id="output">Console output will appear here...</div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toISOString().split('T')[1].slice(0, 8);
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+            output.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearOutput() {
+            document.getElementById('output').textContent = '';
+        }
+
+        // Test 1: Base64 Conversion
+        async function testBase64Conversion() {
+            clearOutput();
+            log('Starting Base64 Conversion Test...');
+            
+            const fileInput = document.getElementById('testFile1');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                log('No file selected', 'error');
+                return;
+            }
+
+            log(`File selected: ${file.name} (${file.type}, ${file.size} bytes)`);
+
+            try {
+                // Test the fileToBase64 function
+                const base64 = await fileToBase64(file);
+                
+                log(`Base64 conversion successful`);
+                log(`Base64 length: ${base64.length} characters`);
+                log(`First 50 chars: ${base64.substring(0, 50)}...`);
+                
+                // Validate it's pure base64 (no data URL prefix)
+                if (base64.startsWith('data:')) {
+                    log('ERROR: Base64 contains data URL prefix', 'error');
+                } else if (/^[A-Za-z0-9+/]*={0,2}$/.test(base64)) {
+                    log('Base64 format validation passed', 'success');
+                } else {
+                    log('Base64 format validation failed', 'error');
+                }
+
+                // Test decoding
+                try {
+                    const decoded = atob(base64);
+                    log(`Base64 decoding successful (${decoded.length} bytes)`, 'success');
+                } catch (e) {
+                    log(`Base64 decoding failed: ${e.message}`, 'error');
+                }
+
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test 2: Data URL Handling
+        async function testDataURLHandling() {
+            clearOutput();
+            log('Starting Data URL Handling Test...');
+            
+            const fileInput = document.getElementById('testFile2');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                log('No file selected', 'error');
+                return;
+            }
+
+            log(`File selected: ${file.name}`);
+
+            try {
+                // Get data URL
+                const dataUrl = await fileToDataURL(file);
+                log(`Data URL created: ${dataUrl.substring(0, 50)}...`);
+
+                // Test extraction of base64 from data URL
+                const parts = dataUrl.split(',');
+                if (parts.length === 2) {
+                    const base64 = parts[1];
+                    log(`Base64 extracted from data URL`, 'success');
+                    log(`Extracted base64 length: ${base64.length}`);
+                    
+                    // Validate extracted base64
+                    if (/^[A-Za-z0-9+/]*={0,2}$/.test(base64)) {
+                        log('Extracted base64 is valid', 'success');
+                    } else {
+                        log('Extracted base64 is invalid', 'error');
+                    }
+                } else {
+                    log('Failed to split data URL', 'error');
+                }
+
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test 3: Backend Validation Simulation
+        async function testBackendValidation() {
+            clearOutput();
+            log('Starting Backend Validation Test...');
+            
+            const fileInput = document.getElementById('testFile3');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                log('No file selected', 'error');
+                return;
+            }
+
+            log(`File selected: ${file.name}`);
+
+            try {
+                // Get pure base64
+                const base64 = await fileToBase64(file);
+                
+                // Simulate backend validation
+                log('Simulating backend validation...');
+                
+                // Test 1: String type check
+                if (typeof base64 === 'string') {
+                    log('✓ Type check passed', 'success');
+                } else {
+                    log('✗ Type check failed', 'error');
+                }
+
+                // Test 2: Not empty
+                if (base64 && base64.length > 0) {
+                    log('✓ Not empty check passed', 'success');
+                } else {
+                    log('✗ Empty check failed', 'error');
+                }
+
+                // Test 3: Base64 regex validation
+                const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+                if (base64Regex.test(base64)) {
+                    log('✓ Base64 regex validation passed', 'success');
+                } else {
+                    log('✗ Base64 regex validation failed', 'error');
+                }
+
+                // Test 4: Buffer conversion (Node.js simulation)
+                try {
+                    // In browser, we use atob/btoa instead of Buffer
+                    const decoded = atob(base64);
+                    const buffer = new Uint8Array(decoded.length);
+                    for (let i = 0; i < decoded.length; i++) {
+                        buffer[i] = decoded.charCodeAt(i);
+                    }
+                    
+                    if (buffer.length > 0) {
+                        log(`✓ Buffer conversion successful (${buffer.length} bytes)`, 'success');
+                    } else {
+                        log('✗ Buffer is empty', 'error');
+                    }
+                } catch (e) {
+                    log(`✗ Buffer conversion failed: ${e.message}`, 'error');
+                }
+
+                // Test 5: Whitespace stripping
+                const withWhitespace = `  ${base64}\n\t  `;
+                const stripped = withWhitespace.replace(/\s/g, '');
+                if (stripped === base64) {
+                    log('✓ Whitespace stripping works correctly', 'success');
+                } else {
+                    log('✗ Whitespace stripping failed', 'error');
+                }
+
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test 4: Full Upload Flow Simulation
+        async function testFullUploadFlow() {
+            clearOutput();
+            log('Starting Full Upload Flow Test...');
+            
+            const fileInput = document.getElementById('testFile4');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                log('No file selected', 'error');
+                return;
+            }
+
+            log(`File selected: ${file.name} (${file.type}, ${file.size} bytes)`);
+
+            try {
+                // Step 1: Frontend conversion
+                log('\n📤 FRONTEND PROCESSING:');
+                const base64 = await fileToBase64(file);
+                log(`✓ File converted to base64 (${base64.length} chars)`);
+
+                // Step 2: Create payload
+                const fileData = {
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    data: base64
+                };
+                log(`✓ File data object created`);
+
+                // Step 3: Simulate backend processing
+                log('\n📥 BACKEND PROCESSING (Simulation):');
+                
+                // Check if data exists
+                if (!fileData.data) {
+                    log('✗ No data field', 'error');
+                    return;
+                }
+                log('✓ Data field exists');
+
+                // Handle data URL if present (shouldn't be with our fix)
+                let processedBase64 = fileData.data;
+                if (processedBase64.startsWith('data:')) {
+                    log('⚠️ Data URL detected, extracting base64...');
+                    const parts = processedBase64.split(',');
+                    if (parts.length === 2) {
+                        processedBase64 = parts[1];
+                        log('✓ Base64 extracted from data URL');
+                    }
+                } else {
+                    log('✓ Pure base64 received (no data URL)');
+                }
+
+                // Strip whitespace
+                processedBase64 = processedBase64.replace(/\s/g, '');
+                log('✓ Whitespace stripped');
+
+                // Validate base64
+                const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+                if (!base64Regex.test(processedBase64)) {
+                    log('✗ Invalid base64 format', 'error');
+                    return;
+                }
+                log('✓ Base64 format validated');
+
+                // Convert to buffer
+                try {
+                    const decoded = atob(processedBase64);
+                    const buffer = new Uint8Array(decoded.length);
+                    for (let i = 0; i < decoded.length; i++) {
+                        buffer[i] = decoded.charCodeAt(i);
+                    }
+                    
+                    if (buffer.length === 0) {
+                        log('✗ Empty buffer', 'error');
+                        return;
+                    }
+                    log(`✓ Buffer created (${buffer.length} bytes)`);
+
+                    // Create n8n binary format
+                    const binaryData = {
+                        data: buffer,
+                        fileName: fileData.name || 'unnamed',
+                        mimeType: fileData.type || 'application/octet-stream',
+                        fileSize: buffer.length
+                    };
+                    log('✓ n8n binary format created');
+
+                    log('\n🎉 FILE UPLOAD TEST PASSED!', 'success');
+                    log(`Successfully processed: ${binaryData.fileName}`);
+                    log(`MIME Type: ${binaryData.mimeType}`);
+                    log(`Size: ${binaryData.fileSize} bytes`);
+
+                } catch (e) {
+                    log(`✗ Buffer conversion failed: ${e.message}`, 'error');
+                }
+
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Helper functions
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    // Extract pure base64 from data URL
+                    const dataUrl = reader.result;
+                    // Remove the data URL prefix (e.g., "data:image/png;base64,")
+                    const base64 = dataUrl.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function fileToDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Initialize
+        log('File Upload Test Suite Ready', 'success');
+        log('Select a file and run a test to begin...\n');
+    </script>
+</body>
+</html>

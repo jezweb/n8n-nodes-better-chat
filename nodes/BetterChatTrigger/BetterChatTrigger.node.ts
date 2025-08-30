@@ -1069,8 +1069,9 @@ export class BetterChatTrigger implements INodeType {
 			return new Promise((resolve, reject) => {
 				const reader = new FileReader();
 				reader.onload = () => {
-					// Extract pure base64 from data URL to avoid special characters
+					// Extract pure base64 from data URL
 					const dataUrl = reader.result;
+					// Remove the data URL prefix (e.g., "data:image/png;base64,")
 					const base64 = dataUrl.split(',')[1];
 					resolve(base64);
 				};
@@ -1256,7 +1257,7 @@ export class BetterChatTrigger implements INodeType {
 		});
 		
 		// Event delegation for copy buttons
-		document.getElementById('messagesDiv').addEventListener('click', function(e) {
+		document.getElementById('messages').addEventListener('click', function(e) {
 			if (e.target && e.target.classList.contains('copy-button')) {
 				copyToClipboard(e.target);
 			}
@@ -1423,13 +1424,24 @@ export class BetterChatTrigger implements INodeType {
 								return; // Skip this file
 							}
 							
-							// File data should already be pure base64 from frontend
-							// But handle both cases for compatibility
+							// Handle both pure base64 and data URL formats
 							let base64Data = file.data;
-							if (typeof file.data === 'string' && file.data.startsWith('data:')) {
-								// Legacy: Extract base64 from data URL if needed
-								const parts = file.data.split(',');
-								base64Data = parts[1] || file.data;
+							
+							// Remove data URL prefix if present
+							if (typeof file.data === 'string') {
+								// Check if it's a data URL
+								if (file.data.startsWith('data:')) {
+									// Extract base64 from data URL
+									const parts = file.data.split(',');
+									if (parts.length === 2) {
+										base64Data = parts[1];
+									} else {
+										console.error(`Invalid data URL format for file ${file.name}`);
+										return; // Skip this file
+									}
+								}
+								// Also strip any whitespace that might have been introduced
+								base64Data = base64Data.replace(/\s/g, '');
 							}
 							
 							// Validate base64 data
@@ -1438,10 +1450,23 @@ export class BetterChatTrigger implements INodeType {
 								return; // Skip this file
 							}
 							
+							// Validate that it's valid base64
+							const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+							if (!base64Regex.test(base64Data)) {
+								console.error(`Invalid base64 format for file ${file.name}`);
+								return; // Skip this file
+							}
+							
 							// Convert base64 to Buffer with error handling
 							let buffer: Buffer;
 							try {
 								buffer = Buffer.from(base64Data, 'base64');
+								
+								// Validate that the buffer is not empty
+								if (buffer.length === 0) {
+									console.error(`Empty buffer for file ${file.name}`);
+									return; // Skip this file
+								}
 							} catch (bufferError) {
 								console.error(`Error converting base64 to buffer for file ${file.name}:`, bufferError);
 								return; // Skip this file

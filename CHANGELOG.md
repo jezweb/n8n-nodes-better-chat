@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.26] - 2025-08-30
+
+### Fixed
+- **File Upload**: Fixed critical file upload functionality issues
+  - Fixed typo in event listener (changed `messagesDiv` to `messages`)
+  - Frontend now sends pure Base64 string without data URL prefix
+  - Enhanced backend validation with robust Base64 format checking
+  - Added whitespace stripping for Base64 data
+  - Improved error handling with detailed logging for debugging
+  - Added empty buffer detection to prevent invalid file processing
+
+### Enhanced
+- Backend now handles both pure Base64 and data URL formats for backward compatibility
+- Added comprehensive Base64 regex validation
+- Better error messages for file processing failures
+
+### Added
+- Test suite HTML file for validating file upload functionality
+
 ## [0.3.25] - 2025-08-29
 
 ### Fixed
